@@ -19,11 +19,11 @@ variable "region" {
 }
 
 variable "ssh_key_group_name" {
-  default = "keys"
+  default = "TP2"
 }
 
 variable "ssh_key_name" {
-  default = "ssh_key"
+  default = "TP2-Arqui"
 }
 
 variable "os_publisher" {
@@ -43,5 +43,5 @@ variable "os_version" {
 }
 
 variable "machine_sku" {
-  default = "Standard_B1s"
+  default = "Standard_D2als_v7"
 }
