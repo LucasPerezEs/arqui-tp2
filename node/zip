@@ -4,4 +4,7 @@ cd $DIR
 
 zip src.zip *.js *.json -1
 
+# TP1 - agrego los JSON de cuentas, tasas y operaciones al paquete
+zip -r src.zip state/
+
 cd $OLD_DIR
