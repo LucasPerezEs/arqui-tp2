@@ -2,6 +2,9 @@ import express from 'express';
 import axios from 'axios';
 import config from './config.js'
 
+// Redis - operaciones compartidas
+import { setRedisBalance, setRedisRate } from './redisUpdates.js';
+
 // TP1 - Servicio de cambio de monedas
 import {
     init as exchangeInit,
@@ -11,6 +14,7 @@ import {
     setRate,
     getLog,
     exchange,
+    getSharedState,
 } from './exchange.js';
 
 await exchangeInit();
@@ -24,40 +28,91 @@ app.get('/', (req, res) => {
 // TP1 - Endpoints de arVault
 app.use(express.json());
 
-app.get('/accounts', (req, res) => {
-    res.json(getAccounts());
-});
-
-app.put('/accounts/:id/balance', (req, res) => {
-    const accountId = req.params.id;
-    const { balance } = req.body;
-
-    if (!accountId || !balance) {
-        return res.status(400).json({ error: 'Malformed request' });
-    } else {
-        setAccountBalance(accountId, balance);
-        res.json(getAccounts());
+app.get('/accounts', async (req, res) => {
+    try {
+        res.json(await getSharedState('accounts', getAccounts()));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
-app.get('/rates', (req, res) => {
-    res.json(getRates());
+app.put('/accounts/:id/balance', async (req, res) => {
+    const accountId = req.params.id;
+    const { balance } = req.body;
+
+    if (!accountId || balance === undefined || balance === null) {
+        return res.status(400).json({ error: 'Malformed request' });
+    }
+
+    try {
+        if (process.env.REDIS_ENABLED === 'true') {
+            res.json(await setRedisBalance(accountId, balance));
+        } else {
+            setAccountBalance(accountId, balance);
+            res.json(getAccounts());
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-app.put('/rates', (req, res) => {
+// app.put('/accounts/:id/balance', (req, res) => {
+//     const accountId = req.params.id;
+//     const { balance } = req.body;
+
+//     if (!accountId || !balance) {
+//         return res.status(400).json({ error: 'Malformed request' });
+//     } else {
+//         setAccountBalance(accountId, balance);
+//         res.json(getAccounts());
+//     }
+// });
+
+app.get('/rates', async (req, res) => {
+    try {
+        res.json(await getSharedState('rates', getRates()));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.put('/rates', async (req, res) => {
     const { baseCurrency, counterCurrency, rate } = req.body;
 
     if (!baseCurrency || !counterCurrency || !rate) {
         return res.status(400).json({ error: 'Malformed request' });
     }
 
-    const newRateRequest = { ...req.body };
-    setRate(newRateRequest);
-    res.json(getRates());
+    try {
+        if (process.env.REDIS_ENABLED === 'true') {
+            res.json(await setRedisRate(req.body));
+        } else {
+            setRate(req.body);
+            res.json(getRates());
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-app.get('/log', (req, res) => {
-    res.json(getLog());
+// app.put('/rates', (req, res) => {
+//     const { baseCurrency, counterCurrency, rate } = req.body;
+
+//     if (!baseCurrency || !counterCurrency || !rate) {
+//         return res.status(400).json({ error: 'Malformed request' });
+//     }
+
+//     const newRateRequest = { ...req.body };
+//     setRate(newRateRequest);
+//     res.json(getRates());
+// });
+
+app.get('/log', async (req, res) => {
+    try {
+        res.json(await getSharedState('log', getLog()));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 app.post('/exchange', async (req, res) => {

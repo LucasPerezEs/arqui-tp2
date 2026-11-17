@@ -36,9 +36,9 @@ export async function init() {
     log = await loadRedis(REDIS_LOG, LOG);
 
     // Redis - guardado periodico para la primera etapa con un nodo
-    scheduleSaveRedis(accounts, REDIS_ACCOUNTS, 1000);
-    scheduleSaveRedis(rates, REDIS_RATES, 5000);
-    scheduleSaveRedis(log, REDIS_LOG, 1000);
+    // scheduleSaveRedis(accounts, REDIS_ACCOUNTS, 1000);
+    // scheduleSaveRedis(rates, REDIS_RATES, 5000);
+    // scheduleSaveRedis(log, REDIS_LOG, 1000);
   } else {
     accounts = await load(ACCOUNTS);
     rates = await load(RATES);

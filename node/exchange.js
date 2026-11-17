@@ -5,6 +5,9 @@ import { init as stateInit, getAccounts as stateAccounts, getRates as stateRates
 // Import para StatsD para metricas
 import StatsD from "hot-shots";
 
+// Redis - intercambio usando estado compartido
+import { exchangeRedis } from "./redisExchange.js";
+
 // Configuracion de StatsD para enviar metricas a Graphite
 const statsd = new StatsD({
   host: "graphite",
@@ -59,6 +62,24 @@ export function setRate(rateRequest) {
 
 // Ejecuta una operación de intercambio
 export async function exchange(exchangeRequest) {
+
+  // Redis - uso la transaccion compartida cuando esta habilitado
+  if (process.env.REDIS_ENABLED === "true") {
+    const result = await exchangeRedis(exchangeRequest, transfer);
+
+    if (result.ok) {
+      const { baseCurrency, counterCurrency, baseAmount } = exchangeRequest;
+
+      // Mantengo las metricas de negocio del TP1
+      statsd.increment(`volume.${baseCurrency}`, baseAmount);
+      statsd.increment(`volume.${counterCurrency}`, result.counterAmount);
+      statsd.increment(`net.${baseCurrency}`, baseAmount);
+      statsd.decrement(`net.${counterCurrency}`, result.counterAmount);
+    }
+
+    return result;
+  }
+
   const {
     baseCurrency,
     counterCurrency,
@@ -162,4 +183,20 @@ function findAccountById(id) {
   }
 
   return null;
+}
+
+// Redis - obtengo los datos actualizados del almacenamiento compartido
+export async function getSharedState(key, localData) {
+  if (process.env.REDIS_ENABLED !== "true") {
+    return localData;
+  }
+
+  const { getRedisClient } = await import("./redisClient.js");
+  const data = await getRedisClient().get(`arvault:${key}`);
+
+  if (data === null) {
+    throw new Error(`No se encontro ${key} en Redis`);
+  }
+
+  return JSON.parse(data);
 }
