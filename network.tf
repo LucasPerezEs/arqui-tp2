@@ -38,3 +38,11 @@ resource "azurerm_subnet_network_security_group_association" "sn_vmss_nsg_assoc"
   subnet_id                 = azurerm_subnet.tp2_sn_vmss.id
   network_security_group_id = azurerm_network_security_group.vmss_http_sg.id
 }
+
+# Redis - subred para la conexion privada
+resource "azurerm_subnet" "tp2_sn_redis" {
+  name                 = "tp2_redis_subnet"
+  resource_group_name  = azurerm_resource_group.tp2_resource_group.name
+  virtual_network_name = azurerm_virtual_network.tp2_vn.name
+  address_prefixes     = ["10.0.5.0/24"]
+}

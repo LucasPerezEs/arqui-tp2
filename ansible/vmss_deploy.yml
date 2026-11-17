@@ -13,5 +13,30 @@
         group: azureuser
     - name: Install dependencies
       command: npm install
-    - name: Start new version
+    # - name: Start new version
+      # command: pm2 start app.js
+      
+    # Redis - verifico las credenciales antes de iniciar la app
+    - name: Validate Redis configuration
+      assert:
+        that:
+          - lookup('env', 'REDIS_HOST') | length > 0
+          - lookup('env', 'REDIS_PASSWORD') | length > 0
+        fail_msg: "Faltan las credenciales de Redis"
+      when: lookup('env', 'REDIS_ENABLED') == 'true'
+      no_log: true
+
+    # Redis - elimino el proceso detenido para actualizar su configuracion
+    - name: Remove old PM2 process
+      command: pm2 delete app.js
+      ignore_errors: yes
+
+    # Redis - inicio arVault con las variables de conexion
+    - name: Start new version with Redis configuration
       command: pm2 start app.js
+      environment:
+        REDIS_ENABLED: "{{ lookup('env', 'REDIS_ENABLED') | default('false', true) }}"
+        REDIS_HOST: "{{ lookup('env', 'REDIS_HOST') }}"
+        REDIS_PORT: "{{ lookup('env', 'REDIS_PORT') | default('10000', true) }}"
+        REDIS_PASSWORD: "{{ lookup('env', 'REDIS_PASSWORD') }}"
+      no_log: true
