@@ -1,6 +1,7 @@
 import { fileURLToPath } from "url";
 import path from "path";
 import fs from "fs";
+import { initRedis } from "./redisClient.js";
 
 let accounts = null;
 let rates = null;
@@ -16,6 +17,9 @@ const LOG = "./state/log.json";
 
 // Inicializa el estado cargando los datos desde los archivos JSON
 export async function init() {
+  // Inicializo la conexion a Redis si esta habilitada
+  await initRedis();
+
   accounts = await load(ACCOUNTS);
   rates = await load(RATES);
   log = await load(LOG);

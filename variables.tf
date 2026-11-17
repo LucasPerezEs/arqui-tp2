@@ -45,3 +45,9 @@ variable "os_version" {
 variable "machine_sku" {
   default = "Standard_D2als_v7"
 }
+
+# Permite preparar Redis sin crearlo todavia en Azure
+variable "enable_redis" {
+  type    = bool
+  default = false
+}
