@@ -10,18 +10,22 @@ export async function initRedis() {
     return;
   }
 
-  // Valida que esten configurados los datos de conexion
-  if (!process.env.REDIS_HOST || !process.env.REDIS_PASSWORD) {
+  // Redis - valido los datos segun el entorno
+  const redisLocal = process.env.REDIS_LOCAL === "true";
+
+  if (!process.env.REDIS_HOST || (!redisLocal && !process.env.REDIS_PASSWORD)) {
     throw new Error("Faltan los datos de conexion a Redis");
   }
 
   redisClient = createClient({
-    username: "default",
-    password: process.env.REDIS_PASSWORD,
+    ...(!redisLocal && {
+      username: "default",
+      password: process.env.REDIS_PASSWORD,
+    }),
     socket: {
       host: process.env.REDIS_HOST,
-      port: Number(process.env.REDIS_PORT || 10000),
-      tls: true,
+      port: Number(process.env.REDIS_PORT || (redisLocal ? 6379 : 10000)),
+      tls: !redisLocal,
     },
   });
 
