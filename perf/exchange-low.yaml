@@ -1,0 +1,32 @@
+config:
+  target: "{{ $processEnvironment.TARGET }}"
+  http:
+    timeout: 10
+  phases:
+    - name: "Cambio a baja carga: 1 llegada por segundo"
+      duration: 60
+      arrivalRate: 1
+  processor: "./processor.js"
+  plugins:
+    publish-metrics:
+      - type: datadog
+        apiKey: "{{ $processEnvironment.DATADOG_API_KEY }}"
+        apiHost: "{{ $processEnvironment.DATADOG_SITE }}"
+        prefix: "artillery."
+        event:
+          send: false
+        tags:
+          - "service:arvault"
+          - "source:artillery"
+          - "test:exchange-low"
+          - "case:{{ $processEnvironment.TP2_CASE }}"
+          - "run:{{ $processEnvironment.TP2_RUN_ID }}"
+
+scenarios:
+  - name: "Cambiar ARS a USD"
+    flow:
+      - post:
+          url: "/exchange"
+          json: {}
+          beforeRequest: "prepareExchange"
+          afterResponse: "trackExchange"
