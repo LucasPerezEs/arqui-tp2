@@ -79,6 +79,8 @@ export async function exchangeRedis(exchangeRequest, transfer) {
           ts: operationDate,
           ok: false,
           request: exchangeRequest,
+          dni: exchangeRequest.dni,
+          arca: exchangeRequest.arca,
           exchangeRate,
           counterAmount: 0,
           obs: null,

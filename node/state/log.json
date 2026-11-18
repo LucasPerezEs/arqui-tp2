@@ -1,1 +1,27 @@
-[]
+[
+  {
+    "id": "41a_A224-VmdY0RLcj-xa",
+    "ts": "2026-11-18T23:10:59.119Z",
+    "ok": true,
+    "request": {
+      "baseAccountId": "1",
+      "counterAccountId": "2",
+      "baseAmount": 100000,
+      "counterCurrency": "USD",
+      "baseCurrency": "ARS",
+      "dni": "47342490",
+      "arca": {
+        "ok": true,
+        "codigoAutorizacion": "13457271-c050-4730-b3a2-b57abc5ea4bb"
+      }
+    },
+    "dni": "47342490",
+    "arca": {
+      "ok": true,
+      "codigoAutorizacion": "13457271-c050-4730-b3a2-b57abc5ea4bb"
+    },
+    "exchangeRate": 0.00066,
+    "counterAmount": 66,
+    "obs": null
+  }
+]

@@ -80,3 +80,10 @@ export async function setRedisRate(rateRequest) {
       Number((1 / newRate).toFixed(5));
   });
 }
+
+// Registra una operación rechazada por ARCA en el historial compartido
+export async function addRedisLogEntry(entry) {
+  return updateRedis("arvault:log", log => {
+    log.push(entry);
+  });
+}

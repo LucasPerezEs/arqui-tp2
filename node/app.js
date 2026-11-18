@@ -1,9 +1,15 @@
 import express from 'express';
 import axios from 'axios';
 import config from './config.js'
+import { validateDni } from './arca.js';
+import { nanoid } from 'nanoid';
 
 // Redis - operaciones compartidas
-import { setRedisBalance, setRedisRate } from './redisUpdates.js';
+import {
+    setRedisBalance,
+    setRedisRate,
+    addRedisLogEntry
+} from './redisUpdates.js';
 
 // TP1 - Servicio de cambio de monedas
 import {
@@ -115,6 +121,8 @@ app.get('/log', async (req, res) => {
     }
 });
 
+
+
 app.post('/exchange', async (req, res) => {
     const {
         baseCurrency,
@@ -134,15 +142,61 @@ app.post('/exchange', async (req, res) => {
         return res.status(400).json({ error: 'Malformed request' });
     }
 
-    const exchangeRequest = { ...req.body };
-    const exchangeResult = await exchange(exchangeRequest);
+    try {
+        // Primero validamos el DNI con ARCA
+        const arcaResult = await validateDni();
 
-    if (exchangeResult.ok) {
-        res.status(200).json(exchangeResult);
-    } else {
-        res.status(500).json(exchangeResult);
+        if (!arcaResult.ok) {
+            const rejectedOperation = {
+                id: nanoid(),
+                ts: new Date(),
+                ok: false,
+                request: req.body,
+                dni: arcaResult.dni,
+                arca: arcaResult,
+                counterAmount: 0,
+                obs: 'ARCA rejected the operation',
+            };
+
+            if (process.env.REDIS_ENABLED === 'true') {
+                await addRedisLogEntry(rejectedOperation);
+            } else {
+                getLog().push(rejectedOperation);
+            }
+
+            return res.status(403).json(rejectedOperation);
+        }
+
+        // Si ARCA aprueba, ejecutamos el intercambio
+        const exchangeRequest = {
+            ...req.body,
+            dni: arcaResult.dni,
+            arca: {
+                ok: arcaResult.ok,
+                codigoAutorizacion: arcaResult.codigoAutorizacion,
+            },
+        };
+
+        const exchangeResult = await exchange(exchangeRequest);
+
+        if (exchangeResult.ok) {
+            return res.status(200).json(exchangeResult);
+        }
+
+        return res.status(500).json(exchangeResult);
+
+    } catch (err) {
+        console.error('Error processing exchange:', err.message);
+
+        return res.status(500).json({
+            error: 'Could not process exchange',
+            details: err.message,
+        });
     }
 });
+
+
+
 
 app.get('/:dni', async (req, res) => {
     try {
