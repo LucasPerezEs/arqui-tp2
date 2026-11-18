@@ -103,10 +103,12 @@ export async function exchange(exchangeRequest) {
     ts: new Date(),
     ok: false,
     request: exchangeRequest,
+    dni: exchangeRequest.dni,
+    arca: exchangeRequest.arca,
     exchangeRate: exchangeRate,
     counterAmount: 0.0,
     obs: null,
-  };
+};
 
   // Comprobar si disponemos de fondos en la cuenta de la divisa contraparte
   if (counterAccount.balance >= counterAmount) {
