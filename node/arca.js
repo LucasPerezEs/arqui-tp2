@@ -1,17 +1,14 @@
-
 import axios from "axios";
 import config from "./config.js";
 
-// Genera un DNI aleatorio entre 1.000.000 y 99.999.999
-function generateDni() {
-  return String(
-    Math.floor(Math.random() * (99999999 - 1000000 + 1)) + 1000000
-  );
+export function isValidDni(dni) {
+  return typeof dni === "string" && /^[1-9][0-9]{6,7}$/.test(dni);
 }
 
-// Consulta el servicio de ARCA
-export async function validateDni() {
-  const dni = generateDni();
+export async function validateDni(dni) {
+  if (!isValidDni(dni)) {
+    throw new Error("El DNI debe ser un texto entre 1000000 y 99999999");
+  }
 
   const response = await axios.post(
     `${config.arcaUri}/validar`,
@@ -19,8 +16,11 @@ export async function validateDni() {
     { timeout: 5000 }
   );
 
-  return {
-    dni,
-    ...response.data,
-  };
+  if (typeof response.data?.ok !== "boolean"
+      || (response.data.ok && (typeof response.data.codigoAutorizacion !== "string"
+        || response.data.codigoAutorizacion.trim() === ""))) {
+    throw new Error("Respuesta invalida de ARCA");
+  }
+
+  return { ...response.data, dni };
 }

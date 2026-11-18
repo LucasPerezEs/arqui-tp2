@@ -1,7 +1,5 @@
 import express from 'express';
-import axios from 'axios';
-import config from './config.js'
-import { validateDni } from './arca.js';
+import { isValidDni, validateDni } from './arca.js';
 import { nanoid } from 'nanoid';
 
 // Redis - operaciones compartidas
@@ -142,9 +140,16 @@ app.post('/exchange', async (req, res) => {
         return res.status(400).json({ error: 'Malformed request' });
     }
 
+    if (!isValidDni(req.body.dni)) {
+        return res.status(400).json({
+            ok: false,
+            error: 'El DNI debe ser un texto entre 1000000 y 99999999',
+        });
+    }
+
     try {
         // Primero validamos el DNI con ARCA
-        const arcaResult = await validateDni();
+        const arcaResult = await validateDni(req.body.dni);
 
         if (!arcaResult.ok) {
             const rejectedOperation = {
@@ -199,16 +204,18 @@ app.post('/exchange', async (req, res) => {
 
 
 app.get('/:dni', async (req, res) => {
+    if (!isValidDni(req.params.dni)) {
+        return res.status(400).json({
+            ok: false,
+            error: 'El DNI debe ser un texto entre 1000000 y 99999999',
+        });
+    }
+
     try {
-        const response = await axios.post(`${config.arcaUri}/validar`, {dni: parseInt(req.params.dni)});
-        if (response.status == 200) {
-            res.status(200).send(response.data);
-        } else {
-            res.status(500).send(`Unexpected return code ${response.status} from ARCA`);
-        }
+        res.status(200).json(await validateDni(req.params.dni));
     } catch (e) {
-        console.error("Exception consuming ARCA's service", e);
-        res.status(500).send("Exception consuming ARCA's service");
+        console.error("Exception consuming ARCA's service:", e.message);
+        res.status(502).json({ ok: false, error: "Exception consuming ARCA's service" });
     }
 })
 

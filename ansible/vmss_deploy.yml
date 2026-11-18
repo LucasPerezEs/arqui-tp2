@@ -1,6 +1,12 @@
 - name: Update app
   hosts: all
   gather_facts: yes
+  pre_tasks:
+    - name: Validate ARCA configuration
+      assert:
+        that:
+          - lookup('env', 'ARCA_URI') is match('^https?://[^ ]+$')
+        fail_msg: "Falta ARCA_URI; ejecuta el despliegue con bash ansible/deploy.sh"
   tasks:
     - name: Stop old version
       command: pm2 stop app.js
@@ -35,6 +41,7 @@
     - name: Start new version with Redis configuration
       command: pm2 start app.js
       environment:
+        ARCA_URI: "{{ lookup('env', 'ARCA_URI') }}"
         REDIS_ENABLED: "{{ lookup('env', 'REDIS_ENABLED') | default('false', true) }}"
         REDIS_HOST: "{{ lookup('env', 'REDIS_HOST') }}"
         REDIS_PORT: "{{ lookup('env', 'REDIS_PORT') | default('10000', true) }}"

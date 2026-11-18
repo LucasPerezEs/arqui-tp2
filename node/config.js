@@ -1,4 +1,3 @@
 export default {
-  // Base uri for ARCA service
-  arcaUri: 'http://localhost:8080'
+  arcaUri: process.env.ARCA_URI || 'http://localhost:8080'
 };
