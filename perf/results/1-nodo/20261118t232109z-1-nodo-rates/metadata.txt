@@ -1,0 +1,11 @@
+scenario=rates
+case=1-nodo
+run=20261118t232109z-1-nodo-rates
+target=http://losvkupkav.eastus2.cloudapp.azure.com
+datadog_site=us5.datadoghq.com
+node=v22.22.3
+artillery=2.0.34
+git_commit=1f97a30a176581a50f9d9462490837283e437b5c
+tracked_changes_begin
+node/config.js
+tracked_changes_end

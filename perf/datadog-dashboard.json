@@ -57,12 +57,12 @@
               {
                 "data_source": "metrics",
                 "name": "requests",
-                "query": "sum:artillery.http.requests{$test,$case,$run}.as_rate()"
+                "query": "sum:artillery.http.requests{$test,$case,$run}.as_rate().rollup(sum,10)"
               },
               {
                 "data_source": "metrics",
                 "name": "responses",
-                "query": "sum:artillery.http.responses{$test,$case,$run}.as_rate()"
+                "query": "sum:artillery.http.responses{$test,$case,$run}.as_rate().rollup(sum,10)"
               }
             ],
             "formulas": [
@@ -153,17 +153,17 @@
               {
                 "data_source": "metrics",
                 "name": "ok",
-                "query": "sum:artillery.http.codes.200{$test,$case,$run}.as_rate()"
+                "query": "sum:artillery.http.codes.200{$test,$case,$run}.as_rate().rollup(sum,10)"
               },
               {
                 "data_source": "metrics",
                 "name": "client",
-                "query": "sum:artillery.tp2_http_4xx{$test,$case,$run}.as_rate()"
+                "query": "sum:artillery.tp2_http_4xx{$test,$case,$run}.as_rate().rollup(sum,10)"
               },
               {
                 "data_source": "metrics",
                 "name": "server",
-                "query": "sum:artillery.tp2_http_5xx{$test,$case,$run}.as_rate()"
+                "query": "sum:artillery.tp2_http_5xx{$test,$case,$run}.as_rate().rollup(sum,10)"
               }
             ],
             "formulas": [
@@ -210,17 +210,17 @@
               {
                 "data_source": "metrics",
                 "name": "client",
-                "query": "sum:artillery.tp2_http_4xx{$test,$case,$run}.as_count()"
+                "query": "sum:artillery.tp2_http_4xx{$test,$case,$run}.as_count().rollup(sum,10)"
               },
               {
                 "data_source": "metrics",
                 "name": "server",
-                "query": "sum:artillery.tp2_http_5xx{$test,$case,$run}.as_count()"
+                "query": "sum:artillery.tp2_http_5xx{$test,$case,$run}.as_count().rollup(sum,10)"
               },
               {
                 "data_source": "metrics",
                 "name": "responses",
-                "query": "sum:artillery.http.responses{$test,$case,$run}.as_count()"
+                "query": "sum:artillery.http.responses{$test,$case,$run}.as_count().rollup(sum,10)"
               }
             ],
             "formulas": [
@@ -260,17 +260,17 @@
               {
                 "data_source": "metrics",
                 "name": "approved",
-                "query": "sum:artillery.tp2_exchange_ok{$test,$case,$run}.as_rate()"
+                "query": "sum:artillery.tp2_exchange_ok{$test,$case,$run}.as_rate().rollup(sum,10)"
               },
               {
                 "data_source": "metrics",
                 "name": "not_approved",
-                "query": "sum:artillery.tp2_exchange_not_ok{$test,$case,$run}.as_rate()"
+                "query": "sum:artillery.tp2_exchange_not_ok{$test,$case,$run}.as_rate().rollup(sum,10)"
               },
               {
                 "data_source": "metrics",
                 "name": "invalid",
-                "query": "sum:artillery.tp2_invalid_response{$test,$case,$run}.as_rate()"
+                "query": "sum:artillery.tp2_invalid_response{$test,$case,$run}.as_rate().rollup(sum,10)"
               }
             ],
             "formulas": [
@@ -317,12 +317,12 @@
               {
                 "data_source": "metrics",
                 "name": "completed",
-                "query": "sum:artillery.vusers.completed{$test,$case,$run}.as_rate()"
+                "query": "sum:artillery.vusers.completed{$test,$case,$run}.as_rate().rollup(sum,10)"
               },
               {
                 "data_source": "metrics",
                 "name": "failed",
-                "query": "sum:artillery.vusers.failed{$test,$case,$run}.as_rate()"
+                "query": "sum:artillery.vusers.failed{$test,$case,$run}.as_rate().rollup(sum,10)"
               }
             ],
             "formulas": [
