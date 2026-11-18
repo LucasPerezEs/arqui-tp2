@@ -3,16 +3,25 @@ config:
   phases:
     - duration: 60
       arrivalRate: 1
+  processor: "./processor.js"
   plugins:
     publish-metrics:
       - type: datadog
         apiKey: "{{ $processEnvironment.DATADOG_API_KEY }}"
-        apiHost: "us5.datadoghq.com"
+        apiHost: "{{ $processEnvironment.DATADOG_SITE }}"
         prefix: "artillery."
+        event:
+          send: false
         tags:
+          - "service:arvault"
+          - "source:artillery"
           - "test:root"
+          - "case:{{ $processEnvironment.TP2_CASE }}"
+          - "run:{{ $processEnvironment.TP2_RUN_ID }}"
 
 scenarios:
-  - flow:
-    - get:
-        url: '/'
+  - name: "Latencia base GET /"
+    flow:
+      - get:
+          url: "/"
+          afterResponse: "trackRoot"

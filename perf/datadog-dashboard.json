@@ -1,0 +1,441 @@
+{
+  "title": "arVault TP2 - Pruebas y recursos de Azure",
+  "description": "Correlación de Artillery y VMSS. Seleccionar una ejecución y su intervalo absoluto. Los percentiles globales se obtienen del reporte crudo. La etiqueta case describe el caso declarado, no verifica el despliegue.",
+  "layout_type": "ordered",
+  "reflow_type": "fixed",
+  "template_variables": [
+    {
+      "name": "test",
+      "prefix": "test",
+      "default": "*"
+    },
+    {
+      "name": "case",
+      "prefix": "case",
+      "default": "*"
+    },
+    {
+      "name": "run",
+      "prefix": "run",
+      "default": "*"
+    },
+    {
+      "name": "host",
+      "prefix": "host",
+      "default": "*"
+    }
+  ],
+  "widgets": [
+    {
+      "id": 1,
+      "definition": {
+        "type": "note",
+        "content": "Seleccioná test, case y run para las métricas del generador. El filtro host se aplica solamente a los recursos de las VM tp2vmss*. Usá el mismo intervalo absoluto para ambos.\n\nLos p50/p95 graficados son por intervalo; el p95 global sale de report.json. Un VU completado no implica un cambio aprobado. Sin datos no significa cero. Los resultados negativos no identifican por sí solos un rechazo de ARCA.",
+        "background_color": "white",
+        "font_size": "14",
+        "text_align": "left",
+        "show_tick": false,
+        "has_padding": true
+      },
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 12,
+        "height": 2
+      }
+    },
+    {
+      "id": 2,
+      "definition": {
+        "type": "timeseries",
+        "title": "Solicitudes y respuestas por segundo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "requests",
+                "query": "sum:artillery.http.requests{$test,$case,$run}.as_rate()"
+              },
+              {
+                "data_source": "metrics",
+                "name": "responses",
+                "query": "sum:artillery.http.responses{$test,$case,$run}.as_rate()"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "requests",
+                "alias": "Solicitudes/s"
+              },
+              {
+                "formula": "responses",
+                "alias": "Respuestas/s"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 0,
+        "y": 2,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 3,
+      "definition": {
+        "type": "timeseries",
+        "title": "Latencia HTTP por intervalo (ms)",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "p50",
+                "query": "avg:artillery.http.response_time.p50{$test,$case,$run}"
+              },
+              {
+                "data_source": "metrics",
+                "name": "p95",
+                "query": "avg:artillery.http.response_time.p95{$test,$case,$run}"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "p50",
+                "alias": "p50 por intervalo"
+              },
+              {
+                "formula": "p95",
+                "alias": "p95 por intervalo"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 6,
+        "y": 2,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 4,
+      "definition": {
+        "type": "timeseries",
+        "title": "Respuestas HTTP por segundo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "ok",
+                "query": "sum:artillery.http.codes.200{$test,$case,$run}.as_rate()"
+              },
+              {
+                "data_source": "metrics",
+                "name": "client",
+                "query": "sum:artillery.tp2_http_4xx{$test,$case,$run}.as_rate()"
+              },
+              {
+                "data_source": "metrics",
+                "name": "server",
+                "query": "sum:artillery.tp2_http_5xx{$test,$case,$run}.as_rate()"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "ok",
+                "alias": "HTTP 200/s"
+              },
+              {
+                "formula": "client",
+                "alias": "HTTP 4xx/s"
+              },
+              {
+                "formula": "server",
+                "alias": "HTTP 5xx/s"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 0,
+        "y": 5,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 5,
+      "definition": {
+        "type": "timeseries",
+        "title": "Porcentaje de respuestas HTTP 4xx y 5xx",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "client",
+                "query": "sum:artillery.tp2_http_4xx{$test,$case,$run}.as_count()"
+              },
+              {
+                "data_source": "metrics",
+                "name": "server",
+                "query": "sum:artillery.tp2_http_5xx{$test,$case,$run}.as_count()"
+              },
+              {
+                "data_source": "metrics",
+                "name": "responses",
+                "query": "sum:artillery.http.responses{$test,$case,$run}.as_count()"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "100 * (client + server) / responses",
+                "alias": "HTTP 4xx + 5xx (%)"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "max": "100",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 6,
+        "y": 5,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 6,
+      "definition": {
+        "type": "timeseries",
+        "title": "Resultados de cambios por segundo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "approved",
+                "query": "sum:artillery.tp2_exchange_ok{$test,$case,$run}.as_rate()"
+              },
+              {
+                "data_source": "metrics",
+                "name": "not_approved",
+                "query": "sum:artillery.tp2_exchange_not_ok{$test,$case,$run}.as_rate()"
+              },
+              {
+                "data_source": "metrics",
+                "name": "invalid",
+                "query": "sum:artillery.tp2_invalid_response{$test,$case,$run}.as_rate()"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "approved",
+                "alias": "Cambios aprobados/s"
+              },
+              {
+                "formula": "not_approved",
+                "alias": "Cambios no aprobados/s"
+              },
+              {
+                "formula": "invalid",
+                "alias": "Respuestas fuera de contrato/s"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 0,
+        "y": 8,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 7,
+      "definition": {
+        "type": "timeseries",
+        "title": "Usuarios virtuales completados y fallidos por segundo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "completed",
+                "query": "sum:artillery.vusers.completed{$test,$case,$run}.as_rate()"
+              },
+              {
+                "data_source": "metrics",
+                "name": "failed",
+                "query": "sum:artillery.vusers.failed{$test,$case,$run}.as_rate()"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "completed",
+                "alias": "VU completados/s"
+              },
+              {
+                "formula": "failed",
+                "alias": "VU fallidos/s"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 6,
+        "y": 8,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 8,
+      "definition": {
+        "type": "timeseries",
+        "title": "CPU por nodo: 100 - idle (%)",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "idle",
+                "query": "avg:system.cpu.idle{host:tp2vmss*,$host} by {host}"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "100 - idle",
+                "alias": "CPU no ociosa"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "max": "100",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 0,
+        "y": 11,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 9,
+      "definition": {
+        "type": "timeseries",
+        "title": "Memoria no disponible por nodo (%)",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "total",
+                "query": "avg:system.mem.total{host:tp2vmss*,$host} by {host}"
+              },
+              {
+                "data_source": "metrics",
+                "name": "usable",
+                "query": "avg:system.mem.usable{host:tp2vmss*,$host} by {host}"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "100 * (total - usable) / total",
+                "alias": "100 × (total - usable) / total"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "max": "100",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 6,
+        "y": 11,
+        "width": 6,
+        "height": 3
+      }
+    }
+  ]
+}
