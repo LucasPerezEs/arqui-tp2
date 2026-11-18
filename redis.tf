@@ -8,9 +8,13 @@ resource "azurerm_managed_redis" "tp2_redis" {
   # Configuracion minima sin alta disponibilidad
   sku_name                  = "Balanced_B0"
   high_availability_enabled = false
+  public_network_access     = "Disabled"
 
   default_database {
     access_keys_authentication_enabled = true
+    client_protocol                    = "Encrypted"
+    clustering_policy                  = "NoCluster"
+    eviction_policy                    = "NoEviction"
   }
 }
 

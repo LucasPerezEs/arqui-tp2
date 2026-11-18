@@ -1,0 +1,25 @@
+{
+  "captured_at_utc": "2026-11-18T22:49:33.128278+00:00",
+  "source": "terraform show -json (campos seleccionados; sin claves)",
+  "name": "tp2-arvault-redis",
+  "resource_group": "tp2_resource_group",
+  "region": "eastus2",
+  "sku": "Balanced_B0",
+  "high_availability_enabled": false,
+  "public_network_access": "Disabled",
+  "hostname": "tp2-arvault-redis.eastus2.redis.azure.net",
+  "database": {
+    "port": 10000,
+    "client_protocol": "Encrypted",
+    "clustering_policy": "NoCluster",
+    "eviction_policy": "NoEviction",
+    "access_keys_authentication_enabled": true
+  },
+  "private_endpoint": {
+    "name": "tp2-redis-endpoint",
+    "private_ip": "10.0.5.4",
+    "private_dns_zone": "privatelink.redis.azure.net",
+    "subnet": "10.0.5.0/24"
+  },
+  "vmss_instances_in_state": 1
+}

@@ -1,0 +1,1 @@
+{"verified_at_utc": "2026-11-18T22:49:21.522176+00:00", "host": "tp2-arvault-redis.eastus2.redis.azure.net", "port": 10000, "private_ip": "10.0.5.4", "tls": "TLSv1.3", "authentication": "OK", "ping": "PONG", "watch_three_keys": "OK", "readonly_multi_exec": "OK", "data_modified": false}
