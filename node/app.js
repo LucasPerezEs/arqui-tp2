@@ -1,6 +1,7 @@
 import express from 'express';
 import { ArcaError, isValidDni, validateDni } from './arca.js';
 import { nanoid } from 'nanoid';
+import { RedisExchangePendingError } from './redisExchange.js';
 
 // Redis - operaciones compartidas
 import {
@@ -222,6 +223,16 @@ app.post('/exchange', async (req, res) => {
                 error: err.code,
             };
             return respondWithLoggedOperation(res, err.httpStatus, failedOperation);
+        }
+
+        if (err instanceof RedisExchangePendingError) {
+            return res.status(503).json({
+                ...err.operation,
+                ok: null,
+                pending: true,
+                error: 'EXCHANGE_PENDING',
+                obs: err.message,
+            });
         }
 
         return res.status(500).json({
