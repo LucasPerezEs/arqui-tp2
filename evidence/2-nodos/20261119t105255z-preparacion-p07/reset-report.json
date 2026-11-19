@@ -1,0 +1,73 @@
+{
+  "kind": "test_fixture_reset",
+  "captured_at_utc": "2026-11-19T10:58:44.320Z",
+  "source_run": "20261119t045643z-2-nodos-exchange-high",
+  "source_commit": "b4da622a53a17eeb294f641ca6c9e4174788b11c",
+  "source_snapshots": {
+    "accounts": {
+      "sha256": "5e487a6609a90162c0157fa5200a26e672d73ed09afdbe86f7d14fe791ea5828",
+      "bytes": 185
+    },
+    "rates": {
+      "sha256": "1d0b76e561cef6ef6d1c0c70a32f5e3bee226c4f97bce172e7b505734c27ee5d",
+      "bytes": 109
+    },
+    "log": {
+      "sha256": "822f7415e29474a3d3986f5d965eec4f3ee63b6a3fe29d66a5702e23f690e78d",
+      "bytes": 834926
+    }
+  },
+  "backup_before_sha256": "f4b7b60d0f620935272bb1883ba02b51454acb44b678a4b25754683e6a1412fa",
+  "keys_before": 143,
+  "keys_after": 3,
+  "reservations_removed": 140,
+  "reservations_after": 0,
+  "log_entries_before": 2667,
+  "log_entries_after": 1989,
+  "accounts_after": [
+    {
+      "id": 1,
+      "currency": "ARS",
+      "balance": 121497000
+    },
+    {
+      "id": 2,
+      "currency": "USD",
+      "balance": 59011.97999999477
+    },
+    {
+      "id": 3,
+      "currency": "EUR",
+      "balance": 40000
+    },
+    {
+      "id": 4,
+      "currency": "BRL",
+      "balance": 60000
+    }
+  ],
+  "rates_after": {
+    "ARS": {
+      "BRL": 0.0034,
+      "EUR": 0.00057,
+      "USD": 0.00066
+    },
+    "BRL": {
+      "ARS": 297.06
+    },
+    "EUR": {
+      "ARS": 1761
+    },
+    "USD": {
+      "ARS": 1513
+    }
+  },
+  "reconciled_operations": false,
+  "checks": {
+    "source_hashes_match": true,
+    "stopped_application": true,
+    "backup_matches_live_before_reset": true,
+    "target_matches_live_after_reset": true,
+    "unrelated_keys_not_modified": true
+  }
+}

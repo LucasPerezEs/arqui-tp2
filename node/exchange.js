@@ -4,6 +4,7 @@ import { init as stateInit, getAccounts as stateAccounts, getRates as stateRates
 
 import { recordExchangeResult } from "./metrics.js";
 import { exchangeRedis } from "./redisExchange.js";
+import { getRedisLog } from "./redisLog.js";
 
 let accounts;
 let rates;
@@ -165,6 +166,8 @@ export async function getSharedState(key, localData) {
   if (process.env.REDIS_ENABLED !== "true") {
     return localData;
   }
+
+  if (key === "log") return getRedisLog();
 
   const { getRedisClient } = await import("./redisClient.js");
   const data = await getRedisClient().get(`arvault:${key}`);

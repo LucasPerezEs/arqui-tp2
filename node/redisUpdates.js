@@ -1,6 +1,7 @@
 
 import { WatchError } from "redis";
 import { getRedisClient } from "./redisClient.js";
+import { appendRedisLog } from "./redisLog.js";
 
 // Redis - actualizo una clave sin pisar cambios de otros nodos
 async function updateRedis(key, modify) {
@@ -83,7 +84,5 @@ export async function setRedisRate(rateRequest) {
 
 // Registra operaciones rechazadas o fallidas antes del intercambio
 export async function addRedisLogEntry(entry) {
-  return updateRedis("arvault:log", log => {
-    log.push(entry);
-  });
+  return appendRedisLog(entry);
 }

@@ -1,0 +1,70 @@
+{
+  "source_run": "20261119t045643z-2-nodos-exchange-high",
+  "source_commit": "b4da622a53a17eeb294f641ca6c9e4174788b11c",
+  "source_snapshots": {
+    "accounts": {
+      "sha256": "5e487a6609a90162c0157fa5200a26e672d73ed09afdbe86f7d14fe791ea5828",
+      "bytes": 185
+    },
+    "rates": {
+      "sha256": "1d0b76e561cef6ef6d1c0c70a32f5e3bee226c4f97bce172e7b505734c27ee5d",
+      "bytes": 109
+    },
+    "log": {
+      "sha256": "822f7415e29474a3d3986f5d965eec4f3ee63b6a3fe29d66a5702e23f690e78d",
+      "bytes": 834926
+    }
+  },
+  "target_accounts": [
+    {
+      "id": 1,
+      "currency": "ARS",
+      "balance": 121497000
+    },
+    {
+      "id": 2,
+      "currency": "USD",
+      "balance": 59011.97999999477
+    },
+    {
+      "id": 3,
+      "currency": "EUR",
+      "balance": 40000
+    },
+    {
+      "id": 4,
+      "currency": "BRL",
+      "balance": 60000
+    }
+  ],
+  "target_rates": {
+    "ARS": {
+      "BRL": 0.0034,
+      "EUR": 0.00057,
+      "USD": 0.00066
+    },
+    "BRL": {
+      "ARS": 297.06
+    },
+    "EUR": {
+      "ARS": 1761
+    },
+    "USD": {
+      "ARS": 1513
+    }
+  },
+  "target_log_entries": 1989,
+  "expected_pending_before": 140,
+  "expected_pending_after": 0,
+  "preparation_id": "20261119t105255z-preparacion-p07",
+  "deployed_source_hashes": {
+    "app.js": "f4a67f40c195179f77261e4b9aad1556d86e493bbbc6c724db024c2aeb9cfc20",
+    "arca.js": "1f4e66c688d03bf17031006f8a3b9f3acb4f8ff285eba97751452d7d94149451",
+    "metrics.js": "441caf3f60d3466e16f650619794d11d5c11ae553a3bc118fdbbc78f70176acf",
+    "exchange.js": "b28df1b3b14f020a55cc45675e5aa27072d636285f76e8695879a289f62281cb",
+    "redisUpdates.js": "c3c4e36dc91b02ffee99a458814b9a94b448fe666427102e7c94b18fc50cbda3",
+    "redisExchange.js": "c658e305d3afd6e5299f519421f6d2b9253f694b310c93984d311d200fec5a02",
+    "config.js": "463d6dadc5862886594cdac54d0f82970705fdf77ec0bed67eb4f632ce8f6305",
+    "redisLog.js": "f995b203e33b75d3e061effaedef9dc27b94462f7c015cdec092007c5134e57f"
+  }
+}

@@ -79,3 +79,32 @@ bash perf/run.sh exchange-high 2-nodos
 Si aparecen operaciones pendientes, errores nuevos o timeouts, revisar los
 saldos, el historial y las reservas antes de repetir la prueba. Para comparar
 con un nodo, usar el mismo escenario y registrar su predicción antes de medir.
+
+## Táctica de rendimiento en Redis (P-07)
+
+La lógica de reservas y confirmaciones queda en JavaScript con WATCH/MULTI.
+Cada intercambio usa una conexión aislada para que WATCH no se mezcle con
+otras solicitudes. Se conserva el límite de diez intentos; las transferencias
+quedan fuera de los reintentos.
+
+`arvault:log` conserva el JSON del historial anterior. Cada nueva entrada
+se agrega con RPUSH a la lista `arvault:log:entries`. Las confirmaciones
+guardan también `arvault:result:<id>` para identificar resultados ya aplicados.
+GET /log combina el historial anterior y la lista nueva como una lista JSON.
+El intercambio no lee el historial ni lo incluye entre las claves de WATCH.
+No se borra ni se convierte el historial existente al iniciar la aplicación.
+Para comparar con P-06, la preparación restaura sus saldos, cotizaciones
+e historial iniciales, con 1.989 entradas y cero reservas. Antes del
+reinicio se respalda el estado completo. Esto reinicia los datos de prueba;
+no reconcilia las 140 operaciones pendientes de P-06.
+
+Desplegar mediante `bash ansible/deploy.sh`, sin tráfico durante el cambio.
+El playbook detiene la aplicación en ambos nodos antes de instalar la misma
+versión en ambos. El código anterior no lee las entradas del formato nuevo;
+volver a esa versión requiere contemplar esos datos. Terraform y el dashboard
+no cambian.
+
+Commitear P-07 antes de ejecutar la carga. Comprobar cero reservas antes
+ y después, comparar la variación de saldos y registrar el crecimiento del
+ historial. La evidencia de la preparación está en
+ `evidence/2-nodos/20261119t105255z-preparacion-p07/`.

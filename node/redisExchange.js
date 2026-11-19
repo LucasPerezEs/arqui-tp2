@@ -1,10 +1,10 @@
 import { nanoid } from "nanoid";
 import { WatchError } from "redis";
 import { getRedisClient } from "./redisClient.js";
+import { LOG_ENTRIES_KEY, RESULT_PREFIX, assertRedisLogType } from "./redisLog.js";
 
 const ACCOUNTS_KEY = "arvault:accounts";
 const RATES_KEY = "arvault:rates";
-const LOG_KEY = "arvault:log";
 
 // Los reintentos contienen solamente operaciones de Redis.
 async function commitUpdate(client, keys, prepare) {
@@ -12,22 +12,29 @@ async function commitUpdate(client, keys, prepare) {
     await client.watch(keys);
     const values = await client.mGet(keys);
     const update = prepare(Object.fromEntries(keys.map((key, i) => [key, values[i]])));
-    if (!update.writes.length && !update.deletes?.length) {
+    if (!update.writes.length && !update.logEntry) {
       await client.unwatch();
       return update.result;
     }
     const transaction = client.multi();
     if (update.writes.length) transaction.mSet(Object.fromEntries(update.writes));
-    for (const key of update.deletes || []) transaction.del(key);
+    if (update.logEntry) transaction.rPush(LOG_ENTRIES_KEY, JSON.stringify(update.logEntry));
     try {
       await transaction.exec();
-      return update.result;
     } catch (error) {
       if (error instanceof WatchError) continue;
-      // Sin respuesta de EXEC, la escritura podria haberse aplicado.
+      // EXEC puede haber aplicado parte de los comandos. Conservar la reserva.
       error.redisCommitUnknown = true;
       throw error;
     }
+    // Borrar la reserva solo despues de comprobar que EXEC termino sin errores.
+    try {
+      if (update.deletes?.length) await client.del(update.deletes);
+    } catch (error) {
+      error.redisCommitUnknown = true;
+      throw error;
+    }
+    return update.result;
   }
   throw new Error("No se pudo completar la operacion por concurrencia");
 }
@@ -46,10 +53,10 @@ export class RedisExchangePendingError extends Error {
 }
 
 async function reserve(client, operationKey, operation) {
-  return commitUpdate(client, [ACCOUNTS_KEY, RATES_KEY, LOG_KEY, operationKey], raw => {
+  await assertRedisLogType(client);
+  return commitUpdate(client, [ACCOUNTS_KEY, RATES_KEY, operationKey], raw => {
     const accounts = readState(raw[ACCOUNTS_KEY], ACCOUNTS_KEY);
     const rates = readState(raw[RATES_KEY], RATES_KEY);
-    const log = readState(raw[LOG_KEY], LOG_KEY);
     const { baseCurrency, counterCurrency, baseAmount } = operation.request;
     const amount = Number(baseAmount);
     const exchangeRate = rates[baseCurrency]?.[counterCurrency];
@@ -70,8 +77,11 @@ async function reserve(client, operationKey, operation) {
     const result = { ...operation, exchangeRate, counterAmount: 0, ok: false, obs: null };
     if (counterAccount.balance < counterAmount) {
       result.obs = "Not enough funds on counter currency account";
-      log.push(result);
-      return { writes: [[LOG_KEY, JSON.stringify(log)]], result: { reservation: null, result } };
+      return {
+        writes: [[RESULT_PREFIX + result.id, JSON.stringify(result)]],
+        logEntry: result,
+        result: { reservation: null, result },
+      };
     }
 
     counterAccount.balance -= counterAmount;
@@ -96,16 +106,18 @@ async function reserve(client, operationKey, operation) {
 async function finish(client, operationKey, reservation, outcome) {
   reservation.stage = "finalizing";
   reservation.outcome = outcome;
-  await client.set(operationKey, JSON.stringify(reservation));
-  return commitUpdate(client, [ACCOUNTS_KEY, LOG_KEY, operationKey], raw => {
+  await assertRedisLogType(client);
+  await saveReservation(client, operationKey, reservation);
+  const resultKey = RESULT_PREFIX + reservation.result.id;
+  return commitUpdate(client, [ACCOUNTS_KEY, operationKey, resultKey], raw => {
     const accounts = readState(raw[ACCOUNTS_KEY], ACCOUNTS_KEY);
-    const log = readState(raw[LOG_KEY], LOG_KEY);
-    if (raw[operationKey] === null) {
-      const recorded = log.find(entry => entry.id === reservation.result.id);
-      if (!recorded) throw new Error("No se encontro la reserva ni su resultado");
-      return { writes: [], result: recorded };
+    if (raw[resultKey] !== null) {
+      if (raw[operationKey] !== null) {
+        throw new Error("La operacion tiene un resultado y una reserva; requiere reconciliacion");
+      }
+      return { writes: [], result: JSON.parse(raw[resultKey]) };
     }
-    const pending = JSON.parse(raw[operationKey]);
+    const pending = readState(raw[operationKey], operationKey);
     const baseAccount = accounts.find(account => account.id === pending.baseAccountId);
     const counterAccount = accounts.find(account => account.id === pending.counterAccountId);
     if (!baseAccount || !counterAccount) throw new Error("Cuenta reservada inexistente");
@@ -123,13 +135,18 @@ async function finish(client, operationKey, reservation, outcome) {
         ? "Could not transfer to clients' account"
         : "Could not withdraw from clients' account",
     };
-    log.push(result);
     return {
-      writes: [[ACCOUNTS_KEY, JSON.stringify(accounts)], [LOG_KEY, JSON.stringify(log)]],
+      writes: [[ACCOUNTS_KEY, JSON.stringify(accounts)], [resultKey, JSON.stringify(result)]],
+      logEntry: result,
       deletes: [operationKey],
       result,
     };
   });
+}
+
+async function saveReservation(client, operationKey, reservation) {
+  const saved = await client.set(operationKey, JSON.stringify(reservation), { XX: true });
+  if (saved === null) throw new Error("No se encontro la reserva de la operacion");
 }
 
 export async function exchangeRedis(exchangeRequest, transfer) {
@@ -153,14 +170,14 @@ export async function exchangeRedis(exchangeRequest, transfer) {
     if (!withdrawn) return await finish(client, operationKey, reservation, "withdraw_failed");
 
     reservation.stage = "depositing";
-    await client.set(operationKey, JSON.stringify(reservation));
+    await saveReservation(client, operationKey, reservation);
     const deposited = await transfer(
       reservation.counterAccountId, exchangeRequest.counterAccountId, reservation.counterAmount
     );
     if (deposited) return await finish(client, operationKey, reservation, "approved");
 
     reservation.stage = "refunding";
-    await client.set(operationKey, JSON.stringify(reservation));
+    await saveReservation(client, operationKey, reservation);
     const refunded = await transfer(
       reservation.baseAccountId, exchangeRequest.baseAccountId, reservation.amount
     );

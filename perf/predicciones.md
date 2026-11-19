@@ -235,3 +235,59 @@
   Sostener 50 solicitudes/s tampoco probaría que esa es la capacidad máxima.
 - Referencia: `perf/results/2-nodos/20261119t041857z-2-nodos-exchange-ramp/report.json`
   y `evidence/2-nodos/20261119t041857z-2-nodos-exchange-ramp/`.
+
+## P-07 — Táctica de rendimiento: reducir el trabajo sobre el historial
+
+- Problema observado: P-06 envió 3.891 solicitudes; hubo 413 respuestas
+  HTTP 200 y 2.747 timeouts. Se omitieron 2.559 usuarios al alcanzar el límite.
+  En los 50 segundos completos analizados de cada tramo sostenido de 25
+  y 50 solicitudes/s no hubo respuestas aprobadas. Los logs mostraron
+  conflictos de actualización y errores OOM de Redis. Esto justifica
+  reducir el trabajo por intercambio, aunque no aísla una causa única.
+- Cambio: guardar cada nueva operación en una lista de Redis con RPUSH,
+  sin leer ni reescribir el historial anterior. Mantener la lógica en
+  JavaScript, WATCH/MULTI y el límite de diez intentos para los saldos.
+  El historial no se vigila con WATCH. Cada intercambio sigue usando una
+  conexión aislada, y las transferencias quedan fuera de los reintentos.
+- Configuración y carga: dos nodos Standard_D2als_v7, el mismo Redis
+  Balanced_B0 y ARCA de 0,5 CPU y 0,5 GiB. Usar exchange-high.yaml sin
+  cambiar fases, timeout de diez segundos ni límite de 200 usuarios.
+  Mismo equipo Ubuntu/WSL, CABA y WiFi; sin otras pruebas ni despliegues.
+- Datos: DNI "1000000", cambios de 1.000 ARS a USD y cotización 0,00066.
+  Partir de los mismos datos que P-06: 121.497.000 ARS, 59.011,98 USD,
+  40.000 EUR, 60.000 BRL y 1.989 operaciones anteriores. Los saldos exactos
+  y el historial de 834.926 bytes están en los JSON anteriores a P-06.
+- Preparación: detener ambas aplicaciones y respaldar el estado completo.
+  Restaurar accounts-before.json, rates-before.json y log-before.json de
+  `evidence/2-nodos/20261119t045643z-2-nodos-exchange-high/`, y retirar las
+  140 reservas de esa prueba. Es un reinicio de datos de prueba, no una
+  reconciliación de las operaciones fallidas. Su evidencia se conserva.
+  Verificar cero reservas y los mismos datos en ambos nodos antes de medir.
+  Registrar cantidad de entradas y tamaño del historial antes y después.
+- Predicción: al menos 15 respuestas aprobadas/s en el tramo de 25
+  solicitudes/s, y 30 aprobadas/s en el de 50. p95 menor a 3.000 ms y
+  5.000 ms, respectivamente. Usar intervalos completos de diez segundos
+  dentro de cada tramo; informar también el p95 de las aprobadas si las hay.
+- Errores: esperamos al menos 60 % de HTTP 200 sobre solicitudes enviadas
+  y como máximo 40 % de HTTP 502/504 por ARCA. Cero HTTP 403, 500, 503,
+  timeouts, respuestas inválidas y usuarios omitidos. Eliminar trabajo
+  de Redis no elimina los fallos del simulador ARCA.
+- Por qué: las solicitudes dejarán de descargar y volver a guardar todo
+  el historial, que en P-06 creció de 834.926 a 1.114.214 bytes. Agregar
+  una entrada no requiere recorrer las anteriores ni provoca conflictos
+  por el historial. Los cambios de
+  saldo todavía pueden provocar reintentos: la predicción puede no cumplirse
+  si esa competencia sigue siendo el límite. La prueba debe comprobarlo.
+- Consistencia: conservar todas las entradas anteriores. Cada aprobación
+  nueva debe sumar 1.000 ARS y descontar 0,66 USD; EUR y BRL sin cambios.
+  Verificar historial, reservas y saldos aunque Artillery termine con código 0.
+- Costos: el historial sigue creciendo y GET /log lee todas las entradas.
+  Las confirmaciones guardan además una copia del resultado por ID para
+  identificar si ya se aplicó. Se conserva el costo de las conexiones
+  aisladas y pueden agotarse los diez intentos sobre los saldos. Desplegar
+  la misma versión en ambos nodos sin tráfico durante el cambio; volver
+  al código anterior haría que /log no mostrara las entradas nuevas.
+  No cambiamos el SKU ni ARCA.
+- Referencia: `perf/results/2-nodos/20261119t045643z-2-nodos-exchange-high/report.json`
+  y `evidence/2-nodos/20261119t045643z-2-nodos-exchange-high/`.
+- Registro de la preparación: `evidence/2-nodos/20261119t105255z-preparacion-p07/`.
