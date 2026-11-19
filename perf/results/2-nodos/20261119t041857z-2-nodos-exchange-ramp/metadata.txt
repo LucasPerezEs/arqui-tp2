@@ -1,0 +1,17 @@
+scenario=exchange-ramp
+case=2-nodos
+run=20261119t041857z-2-nodos-exchange-ramp
+target=http://losvkupkav.eastus2.cloudapp.azure.com
+datadog_site=us5.datadoghq.com
+node=v22.22.3
+artillery=2.0.34
+git_commit=e707145f877a05570057b2de4858182534b5dd73
+tracked_changes_begin
+ansible/requirements.yml
+evidence/1-nodo/20261119t024732z-1-nodo-exchange-low/analisis.md
+evidence/1-nodo/20261119t024732z-1-nodo-exchange-low/analysis.json
+tracked_changes_end
+dni_prueba=1000000
+base_currency=ARS
+counter_currency=USD
+base_amount=1000

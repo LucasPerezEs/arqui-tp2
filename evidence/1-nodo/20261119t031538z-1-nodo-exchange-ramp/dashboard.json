@@ -1,0 +1,769 @@
+{
+  "title": "arVault TP2 - Pruebas y recursos de Azure",
+  "description": "Correlación de Artillery y VMSS. Seleccionar una ejecución y su intervalo absoluto. Los percentiles globales se obtienen del reporte crudo. La etiqueta case describe el caso declarado, no verifica el despliegue.",
+  "layout_type": "ordered",
+  "reflow_type": "fixed",
+  "template_variables": [
+    {
+      "name": "test",
+      "prefix": "test",
+      "default": "*"
+    },
+    {
+      "name": "case",
+      "prefix": "case",
+      "default": "*"
+    },
+    {
+      "name": "run",
+      "prefix": "run",
+      "default": "*"
+    },
+    {
+      "name": "host",
+      "prefix": "host",
+      "default": "*"
+    },
+    {
+      "name": "env",
+      "prefix": "env",
+      "default": "azure"
+    }
+  ],
+  "widgets": [
+    {
+      "id": 1,
+      "definition": {
+        "type": "note",
+        "content": "Seleccioná test, case y run para Artillery. Las métricas de ARCA y negocio usan host y env; los recursos de las VM usan host. Correlacioná todo con el mismo intervalo absoluto, sin otras pruebas simultáneas.\n\nLos percentiles HTTP del generador son por intervalo; el p95 global sale de report.json. Los percentiles de ARCA son del Agent por nodo y resultado; no son un p95 global entre nodos. ARCA aprobada no implica cambio completado. business.exchanges cuenta los intercambios que terminaron después de la aprobación de ARCA. Volumen y neto son importes por intervalo y moneda, no saldos. Sin datos no significa cero.",
+        "background_color": "white",
+        "font_size": "14",
+        "text_align": "left",
+        "show_tick": false,
+        "has_padding": true
+      },
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 12,
+        "height": 2
+      }
+    },
+    {
+      "id": 2,
+      "definition": {
+        "type": "timeseries",
+        "title": "Solicitudes y respuestas por segundo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "requests",
+                "query": "sum:artillery.http.requests{$test,$case,$run}.as_rate().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "responses",
+                "query": "sum:artillery.http.responses{$test,$case,$run}.as_rate().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "requests",
+                "alias": "Solicitudes/s"
+              },
+              {
+                "formula": "responses",
+                "alias": "Respuestas/s"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 0,
+        "y": 2,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 3,
+      "definition": {
+        "type": "timeseries",
+        "title": "Latencia HTTP por intervalo (ms)",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "p50",
+                "query": "avg:artillery.http.response_time.p50{$test,$case,$run}"
+              },
+              {
+                "data_source": "metrics",
+                "name": "p95",
+                "query": "avg:artillery.http.response_time.p95{$test,$case,$run}"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "p50",
+                "alias": "p50 por intervalo"
+              },
+              {
+                "formula": "p95",
+                "alias": "p95 por intervalo"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 6,
+        "y": 2,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 4,
+      "definition": {
+        "type": "timeseries",
+        "title": "Respuestas HTTP por segundo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "ok",
+                "query": "sum:artillery.http.codes.200{$test,$case,$run}.as_rate().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "client",
+                "query": "sum:artillery.tp2_http_4xx{$test,$case,$run}.as_rate().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "server",
+                "query": "sum:artillery.tp2_http_5xx{$test,$case,$run}.as_rate().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "ok",
+                "alias": "HTTP 200/s"
+              },
+              {
+                "formula": "client",
+                "alias": "HTTP 4xx/s"
+              },
+              {
+                "formula": "server",
+                "alias": "HTTP 5xx/s"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 0,
+        "y": 5,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 5,
+      "definition": {
+        "type": "timeseries",
+        "title": "Porcentaje de respuestas HTTP 4xx y 5xx",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "client",
+                "query": "sum:artillery.tp2_http_4xx{$test,$case,$run}.as_count().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "server",
+                "query": "sum:artillery.tp2_http_5xx{$test,$case,$run}.as_count().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "responses",
+                "query": "sum:artillery.http.responses{$test,$case,$run}.as_count().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "100 * (client + server) / responses",
+                "alias": "HTTP 4xx + 5xx (%)"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "max": "100",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 6,
+        "y": 5,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 6,
+      "definition": {
+        "type": "timeseries",
+        "title": "Resultados de cambios por segundo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "approved",
+                "query": "sum:artillery.tp2_exchange_ok{$test,$case,$run}.as_rate().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "not_approved",
+                "query": "sum:artillery.tp2_exchange_not_ok{$test,$case,$run}.as_rate().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "invalid",
+                "query": "sum:artillery.tp2_invalid_response{$test,$case,$run}.as_rate().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "approved",
+                "alias": "Cambios aprobados/s"
+              },
+              {
+                "formula": "not_approved",
+                "alias": "Cambios no aprobados/s"
+              },
+              {
+                "formula": "invalid",
+                "alias": "Respuestas fuera de contrato/s"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 0,
+        "y": 8,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 7,
+      "definition": {
+        "type": "timeseries",
+        "title": "Usuarios virtuales completados y fallidos por segundo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "completed",
+                "query": "sum:artillery.vusers.completed{$test,$case,$run}.as_rate().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "failed",
+                "query": "sum:artillery.vusers.failed{$test,$case,$run}.as_rate().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "completed",
+                "alias": "VU completados/s"
+              },
+              {
+                "formula": "failed",
+                "alias": "VU fallidos/s"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 6,
+        "y": 8,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 8,
+      "definition": {
+        "type": "timeseries",
+        "title": "CPU por nodo: 100 - idle (%)",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "idle",
+                "query": "avg:system.cpu.idle{host:tp2vmss*,$host} by {host}"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "100 - idle",
+                "alias": "CPU no ociosa"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "max": "100",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 0,
+        "y": 11,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 9,
+      "definition": {
+        "type": "timeseries",
+        "title": "Memoria no disponible por nodo (%)",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "total",
+                "query": "avg:system.mem.total{host:tp2vmss*,$host} by {host}"
+              },
+              {
+                "data_source": "metrics",
+                "name": "usable",
+                "query": "avg:system.mem.usable{host:tp2vmss*,$host} by {host}"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "100 * (total - usable) / total",
+                "alias": "100 × (total - usable) / total"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "max": "100",
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 6,
+        "y": 11,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 10,
+      "definition": {
+        "type": "timeseries",
+        "title": "ARCA: consultas y resultados por segundo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "requests",
+                "query": "sum:arvault.arca.requests{service:arvault,$env,$host}.as_rate().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "approved",
+                "query": "sum:arvault.arca.approved{service:arvault,$env,$host}.as_rate().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "rejected",
+                "query": "sum:arvault.arca.rejected{service:arvault,$env,$host}.as_rate().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "errors",
+                "query": "sum:arvault.arca.errors{service:arvault,$env,$host}.as_rate().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "requests",
+                "alias": "Consultas/s"
+              },
+              {
+                "formula": "approved",
+                "alias": "Aprobadas/s"
+              },
+              {
+                "formula": "rejected",
+                "alias": "Rechazadas/s"
+              },
+              {
+                "formula": "errors",
+                "alias": "Errores/s"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "include_zero": true,
+          "min": "0"
+        }
+      },
+      "layout": {
+        "x": 0,
+        "y": 14,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 11,
+      "definition": {
+        "type": "timeseries",
+        "title": "ARCA: errores por causa y segundo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "errors",
+                "query": "sum:arvault.arca.errors{service:arvault,$env,$host} by {reason}.as_rate().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "errors",
+                "alias": "Errores/s por causa"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "include_zero": true,
+          "min": "0"
+        }
+      },
+      "layout": {
+        "x": 6,
+        "y": 14,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 12,
+      "definition": {
+        "type": "timeseries",
+        "title": "ARCA: latencia por nodo y resultado (ms)",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "average",
+                "query": "avg:arvault.arca.duration_ms.avg{service:arvault,$env,$host} by {host,outcome}"
+              },
+              {
+                "data_source": "metrics",
+                "name": "p95",
+                "query": "avg:arvault.arca.duration_ms.95percentile{service:arvault,$env,$host} by {host,outcome}"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "average",
+                "alias": "Media por nodo e intervalo"
+              },
+              {
+                "formula": "p95",
+                "alias": "p95 por nodo e intervalo"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "include_zero": true,
+          "min": "0"
+        }
+      },
+      "layout": {
+        "x": 0,
+        "y": 17,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 13,
+      "definition": {
+        "type": "timeseries",
+        "title": "Negocio: intercambios finalizados tras ARCA por segundo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "exchanges",
+                "query": "sum:arvault.business.exchanges{service:arvault,$env,$host} by {outcome}.as_rate().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "exchanges",
+                "alias": "Intercambios/s por resultado"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "include_zero": true,
+          "min": "0"
+        }
+      },
+      "layout": {
+        "x": 6,
+        "y": 17,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 14,
+      "definition": {
+        "type": "timeseries",
+        "title": "Negocio: volumen por moneda e intervalo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "ars",
+                "query": "sum:arvault.business.volume.ARS{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "usd",
+                "query": "sum:arvault.business.volume.USD{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "eur",
+                "query": "sum:arvault.business.volume.EUR{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "brl",
+                "query": "sum:arvault.business.volume.BRL{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "ars",
+                "alias": "ARS"
+              },
+              {
+                "formula": "usd",
+                "alias": "USD"
+              },
+              {
+                "formula": "eur",
+                "alias": "EUR"
+              },
+              {
+                "formula": "brl",
+                "alias": "BRL"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "include_zero": true,
+          "min": "0"
+        }
+      },
+      "layout": {
+        "x": 0,
+        "y": 20,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 15,
+      "definition": {
+        "type": "timeseries",
+        "title": "Negocio: flujo neto por moneda e intervalo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "ars",
+                "query": "sum:arvault.business.net.ARS{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "usd",
+                "query": "sum:arvault.business.net.USD{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "eur",
+                "query": "sum:arvault.business.net.EUR{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "brl",
+                "query": "sum:arvault.business.net.BRL{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "ars",
+                "alias": "ARS"
+              },
+              {
+                "formula": "usd",
+                "alias": "USD"
+              },
+              {
+                "formula": "eur",
+                "alias": "EUR"
+              },
+              {
+                "formula": "brl",
+                "alias": "BRL"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 6,
+        "y": 20,
+        "width": 6,
+        "height": 3
+      }
+    }
+  ]
+}
