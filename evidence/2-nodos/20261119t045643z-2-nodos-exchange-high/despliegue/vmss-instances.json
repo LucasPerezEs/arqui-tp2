@@ -1,0 +1,14 @@
+[
+  {
+    "id": "0",
+    "name": "tp2vmss_0",
+    "sku": "Standard_D2als_v7",
+    "state": "Succeeded"
+  },
+  {
+    "id": "1",
+    "name": "tp2vmss_1",
+    "sku": "Standard_D2als_v7",
+    "state": "Succeeded"
+  }
+]

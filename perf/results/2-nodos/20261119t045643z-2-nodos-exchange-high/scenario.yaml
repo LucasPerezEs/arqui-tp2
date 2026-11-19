@@ -1,0 +1,51 @@
+config:
+  target: "{{ $processEnvironment.TARGET }}"
+  http:
+    timeout: 10
+  phases:
+    - name: "Inicio: 10 llegadas por segundo"
+      duration: 30
+      arrivalRate: 10
+      maxVusers: 200
+    - name: "Subida: de 10 a 25 llegadas por segundo"
+      duration: 30
+      arrivalRate: 10
+      rampTo: 25
+      maxVusers: 200
+    - name: "Carga sostenida: 25 llegadas por segundo"
+      duration: 60
+      arrivalRate: 25
+      maxVusers: 200
+    - name: "Subida: de 25 a 50 llegadas por segundo"
+      duration: 30
+      arrivalRate: 25
+      rampTo: 50
+      maxVusers: 200
+    - name: "Carga sostenida: 50 llegadas por segundo"
+      duration: 60
+      arrivalRate: 50
+      maxVusers: 200
+  processor: "./processor.js"
+  plugins:
+    publish-metrics:
+      - type: datadog
+        apiKey: "{{ $processEnvironment.DATADOG_API_KEY }}"
+        apiHost: "{{ $processEnvironment.DATADOG_SITE }}"
+        prefix: "artillery."
+        event:
+          send: false
+        tags:
+          - "service:arvault"
+          - "source:artillery"
+          - "test:exchange-high"
+          - "case:{{ $processEnvironment.TP2_CASE }}"
+          - "run:{{ $processEnvironment.TP2_RUN_ID }}"
+
+scenarios:
+  - name: "Cambiar ARS a USD"
+    flow:
+      - post:
+          url: "/exchange"
+          json: {}
+          beforeRequest: "prepareExchange"
+          afterResponse: "trackExchange"
