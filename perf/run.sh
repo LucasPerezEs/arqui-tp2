@@ -4,13 +4,13 @@ set -euo pipefail
 fail() { printf '%s\n' "$*" >&2; exit 1; }
 
 if (( $# < 2 || $# > 3 )); then
-  fail "Uso: bash perf/run.sh <root|rates|exchange-low|exchange-ramp> <caso> [run-id]"
+  fail "Uso: bash perf/run.sh <root|rates|exchange-low|exchange-ramp|exchange-high> <caso> [run-id]"
 fi
 
 scenario="${1%.yaml}"
 case_name="$2"
 case "$scenario" in
-  root|rates|exchange-low|exchange-ramp) ;;
+  root|rates|exchange-low|exchange-ramp|exchange-high) ;;
   *) fail "Escenario desconocido: $scenario" ;;
 esac
 [[ "$case_name" =~ ^[a-z0-9][a-z0-9_-]*$ ]] || fail "Caso inválido; por ejemplo: 1-nodo o 2-nodos"

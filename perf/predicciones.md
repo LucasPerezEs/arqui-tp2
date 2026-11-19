@@ -184,3 +184,54 @@
   Un pico aislado del gráfico no indica la capacidad máxima del sistema.
 - Referencia: `perf/results/1-nodo/20261119t031538z-1-nodo-exchange-ramp/report.json`
   y `evidence/1-nodo/20261119t031538z-1-nodo-exchange-ramp/`.
+
+## P-06 — Carga alta de intercambios con dos nodos
+
+- Qué vamos a probar: aumentar la carga con los dos nodos actuales y ver
+  en qué tramo empieza a crecer la demora o aparecen errores nuevos.
+  Se mantienen las VMs Standard_D2als_v7 en eastus2, Redis Balanced_B0 y
+  ARCA con 0,5 CPU y 0,5 GiB. La aplicación sigue con el código de 827af31.
+- Carga: usar perf/exchange-high.yaml. Primero, 30 segundos a diez
+  solicitudes por segundo; después, 30 segundos subiendo de diez a 25,
+  60 segundos a 25, 30 segundos subiendo de 25 a 50 y 60 segundos a 50.
+  Son 210 segundos de carga y unas 6.450 solicitudes si el generador
+  mantiene el ritmo. Cada usuario virtual envía una solicitud.
+- Datos: el mismo DNI "1000000" y el mismo cambio de 1.000 ARS a USD.
+  La cotización debe mantenerse en 0,00066. Antes de empezar debe haber
+  al menos 5.000 USD disponibles, que cubren las 6.450 aprobaciones
+  posibles con margen. Mantener los datos que ya existen en Redis.
+- Condiciones: mismo equipo con Ubuntu/WSL, desde CABA y por WiFi; sin
+  otras pruebas, despliegues ni cambios de cotización. Ambos nodos activos
+  con la misma versión, Redis habilitado y cero reservas pendientes.
+  Guardar la cantidad de entradas y el tamaño del historial antes y después:
+  el historial crece con cada operación y eso puede influir en la demora.
+- Referencia: con dos nodos y diez solicitudes por segundo hubo 722
+  aprobaciones y 238 errores de ARCA sobre 960 solicitudes. El p95 fue
+  de 1.353,1 ms y se midieron 7,58 aprobaciones/s en 50 segundos completos
+  de la última fase. La CPU de ambos nodos estuvo por debajo del 10 %.
+- Qué esperamos: en el tramo de 25 solicitudes/s, al menos 15 aprobaciones/s
+  y p95 menor a 3.000 ms. En el tramo de 50 solicitudes/s, al menos
+  30 aprobaciones/s y p95 menor a 5.000 ms. Calcularemos estas métricas
+  sobre intervalos completos de cada tramo sostenido y revisaremos
+  también el p95 de las respuestas aprobadas.
+- Errores esperados: al menos 60 % de respuestas HTTP 200 en total y como
+  máximo 40 % de errores de ARCA HTTP 502/504. Esperamos cero HTTP 403,
+  fallos de negocio HTTP 500, operaciones pendientes HTTP 503, errores
+  de conexión o timeout del generador y respuestas con formato incorrecto.
+- Por qué: a diez solicitudes/s los nodos tenían margen de CPU. Esperamos
+  atender más intercambios, aunque ARCA sigue con los mismos recursos.
+  Además, cada intercambio lee el historial completo de Redis y al guardar
+  su resultado vuelve a escribirlo. Con más operaciones al mismo tiempo,
+  los nodos compiten por las mismas claves y el historial es cada vez mayor.
+  Por eso dejamos margen de latencia y buscamos dónde empieza a empeorar.
+- Límite del generador: máximo de 200 usuarios virtuales activos por fase.
+  Con la media anterior de 920,8 ms, a 50 solicitudes/s habría unas 46
+  operaciones en curso si esa demora se mantuviera.
+- Saldos e historial: por cada aprobación, +1.000 ARS y -0,66 USD; EUR y BRL
+  sin cambios. Los errores de ARCA no deben modificar saldos. 
+- Alcance: esta primera ejecución mide dos nodos. Para comparar uno y dos
+  con carga alta habrá que repetir el mismo escenario con un nodo y su
+  predicción previa, registrando también el crecimiento del historial.
+  Sostener 50 solicitudes/s tampoco probaría que esa es la capacidad máxima.
+- Referencia: `perf/results/2-nodos/20261119t041857z-2-nodos-exchange-ramp/report.json`
+  y `evidence/2-nodos/20261119t041857z-2-nodos-exchange-ramp/`.
