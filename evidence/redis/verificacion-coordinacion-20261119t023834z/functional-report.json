@@ -1,0 +1,459 @@
+{
+  "started_at_utc": "2026-11-19T02:38:43.559046+00:00",
+  "target": "http://losvkupkav.eastus2.cloudapp.azure.com",
+  "checks": [
+    {
+      "case": "invalid_dni",
+      "status": 400,
+      "response": {
+        "ok": false,
+        "error": "El DNI debe ser un texto entre 1000000 y 99999999"
+      },
+      "balances_unchanged": true,
+      "log_unchanged": true
+    },
+    {
+      "case": "fiscal_rejection",
+      "attempt": 1,
+      "status": 502,
+      "response": {
+        "id": "GgoG5lTSZ1LmaGlIQoqt8",
+        "ts": "2026-11-19T02:38:46.874Z",
+        "ok": false,
+        "request": {
+          "baseCurrency": "ARS",
+          "counterCurrency": "USD",
+          "baseAccountId": "cliente-ARS-verificacion",
+          "counterAccountId": "cliente-USD-verificacion",
+          "baseAmount": 1000,
+          "dni": "99999999"
+        },
+        "dni": "99999999",
+        "arca": {
+          "ok": null,
+          "error": {
+            "type": "http_5xx",
+            "upstreamStatus": 500
+          }
+        },
+        "counterAmount": 0,
+        "obs": "Could not validate DNI with ARCA",
+        "error": "ARCA_UNAVAILABLE",
+        "logRecorded": true
+      },
+      "before_accounts": [
+        {
+          "id": 1,
+          "currency": "ARS",
+          "balance": 120002000
+        },
+        {
+          "id": 2,
+          "currency": "USD",
+          "balance": 59998.67999999999
+        },
+        {
+          "id": 3,
+          "currency": "EUR",
+          "balance": 40000
+        },
+        {
+          "id": 4,
+          "currency": "BRL",
+          "balance": 60000
+        }
+      ],
+      "after_accounts": [
+        {
+          "id": 1,
+          "currency": "ARS",
+          "balance": 120002000
+        },
+        {
+          "id": 2,
+          "currency": "USD",
+          "balance": 59998.67999999999
+        },
+        {
+          "id": 3,
+          "currency": "EUR",
+          "balance": 40000
+        },
+        {
+          "id": 4,
+          "currency": "BRL",
+          "balance": 60000
+        }
+      ],
+      "stored_operation": {
+        "id": "GgoG5lTSZ1LmaGlIQoqt8",
+        "ts": "2026-11-19T02:38:46.874Z",
+        "ok": false,
+        "request": {
+          "baseCurrency": "ARS",
+          "counterCurrency": "USD",
+          "baseAccountId": "cliente-ARS-verificacion",
+          "counterAccountId": "cliente-USD-verificacion",
+          "baseAmount": 1000,
+          "dni": "99999999"
+        },
+        "dni": "99999999",
+        "arca": {
+          "ok": null,
+          "error": {
+            "type": "http_5xx",
+            "upstreamStatus": 500
+          }
+        },
+        "counterAmount": 0,
+        "obs": "Could not validate DNI with ARCA",
+        "error": "ARCA_UNAVAILABLE"
+      },
+      "arca_error_logged_without_balance_changes": true
+    },
+    {
+      "case": "fiscal_rejection",
+      "attempt": 2,
+      "status": 502,
+      "response": {
+        "id": "u06OzxLWYNdKwtp6JE20w",
+        "ts": "2026-11-19T02:38:48.452Z",
+        "ok": false,
+        "request": {
+          "baseCurrency": "ARS",
+          "counterCurrency": "USD",
+          "baseAccountId": "cliente-ARS-verificacion",
+          "counterAccountId": "cliente-USD-verificacion",
+          "baseAmount": 1000,
+          "dni": "99999999"
+        },
+        "dni": "99999999",
+        "arca": {
+          "ok": null,
+          "error": {
+            "type": "http_5xx",
+            "upstreamStatus": 500
+          }
+        },
+        "counterAmount": 0,
+        "obs": "Could not validate DNI with ARCA",
+        "error": "ARCA_UNAVAILABLE",
+        "logRecorded": true
+      },
+      "before_accounts": [
+        {
+          "id": 1,
+          "currency": "ARS",
+          "balance": 120002000
+        },
+        {
+          "id": 2,
+          "currency": "USD",
+          "balance": 59998.67999999999
+        },
+        {
+          "id": 3,
+          "currency": "EUR",
+          "balance": 40000
+        },
+        {
+          "id": 4,
+          "currency": "BRL",
+          "balance": 60000
+        }
+      ],
+      "after_accounts": [
+        {
+          "id": 1,
+          "currency": "ARS",
+          "balance": 120002000
+        },
+        {
+          "id": 2,
+          "currency": "USD",
+          "balance": 59998.67999999999
+        },
+        {
+          "id": 3,
+          "currency": "EUR",
+          "balance": 40000
+        },
+        {
+          "id": 4,
+          "currency": "BRL",
+          "balance": 60000
+        }
+      ],
+      "stored_operation": {
+        "id": "u06OzxLWYNdKwtp6JE20w",
+        "ts": "2026-11-19T02:38:48.452Z",
+        "ok": false,
+        "request": {
+          "baseCurrency": "ARS",
+          "counterCurrency": "USD",
+          "baseAccountId": "cliente-ARS-verificacion",
+          "counterAccountId": "cliente-USD-verificacion",
+          "baseAmount": 1000,
+          "dni": "99999999"
+        },
+        "dni": "99999999",
+        "arca": {
+          "ok": null,
+          "error": {
+            "type": "http_5xx",
+            "upstreamStatus": 500
+          }
+        },
+        "counterAmount": 0,
+        "obs": "Could not validate DNI with ARCA",
+        "error": "ARCA_UNAVAILABLE"
+      },
+      "arca_error_logged_without_balance_changes": true
+    },
+    {
+      "case": "fiscal_rejection",
+      "attempt": 3,
+      "status": 403,
+      "response": {
+        "id": "8eR4Y4RGI8HuZ6czp8fF4",
+        "ts": "2026-11-19T02:38:50.256Z",
+        "ok": false,
+        "request": {
+          "baseCurrency": "ARS",
+          "counterCurrency": "USD",
+          "baseAccountId": "cliente-ARS-verificacion",
+          "counterAccountId": "cliente-USD-verificacion",
+          "baseAmount": 1000,
+          "dni": "99999999"
+        },
+        "dni": "99999999",
+        "arca": {
+          "ok": false,
+          "codigoAutorizacion": null,
+          "dni": "99999999"
+        },
+        "counterAmount": 0,
+        "obs": "ARCA rejected the operation",
+        "logRecorded": true
+      },
+      "before_accounts": [
+        {
+          "id": 1,
+          "currency": "ARS",
+          "balance": 120002000
+        },
+        {
+          "id": 2,
+          "currency": "USD",
+          "balance": 59998.67999999999
+        },
+        {
+          "id": 3,
+          "currency": "EUR",
+          "balance": 40000
+        },
+        {
+          "id": 4,
+          "currency": "BRL",
+          "balance": 60000
+        }
+      ],
+      "after_accounts": [
+        {
+          "id": 1,
+          "currency": "ARS",
+          "balance": 120002000
+        },
+        {
+          "id": 2,
+          "currency": "USD",
+          "balance": 59998.67999999999
+        },
+        {
+          "id": 3,
+          "currency": "EUR",
+          "balance": 40000
+        },
+        {
+          "id": 4,
+          "currency": "BRL",
+          "balance": 60000
+        }
+      ],
+      "stored_operation": {
+        "id": "8eR4Y4RGI8HuZ6czp8fF4",
+        "ts": "2026-11-19T02:38:50.256Z",
+        "ok": false,
+        "request": {
+          "baseCurrency": "ARS",
+          "counterCurrency": "USD",
+          "baseAccountId": "cliente-ARS-verificacion",
+          "counterAccountId": "cliente-USD-verificacion",
+          "baseAmount": 1000,
+          "dni": "99999999"
+        },
+        "dni": "99999999",
+        "arca": {
+          "ok": false,
+          "codigoAutorizacion": null,
+          "dni": "99999999"
+        },
+        "counterAmount": 0,
+        "obs": "ARCA rejected the operation"
+      },
+      "balances_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "approved_exchange",
+      "attempt": 1,
+      "status": 200,
+      "response": {
+        "id": "2Opo6c_mQSTKOAVCzm2tV",
+        "ts": "2026-11-19T02:38:52.169Z",
+        "request": {
+          "baseCurrency": "ARS",
+          "counterCurrency": "USD",
+          "baseAccountId": "cliente-ARS-verificacion",
+          "counterAccountId": "cliente-USD-verificacion",
+          "baseAmount": 1000,
+          "dni": "1000000",
+          "arca": {
+            "ok": true,
+            "codigoAutorizacion": "15469462-4732-456b-8b13-91d87e2d08c4"
+          }
+        },
+        "dni": "1000000",
+        "arca": {
+          "ok": true,
+          "codigoAutorizacion": "15469462-4732-456b-8b13-91d87e2d08c4"
+        },
+        "exchangeRate": 0.00066,
+        "counterAmount": 0.66,
+        "ok": true,
+        "obs": null
+      },
+      "before_accounts": [
+        {
+          "id": 1,
+          "currency": "ARS",
+          "balance": 120002000
+        },
+        {
+          "id": 2,
+          "currency": "USD",
+          "balance": 59998.67999999999
+        },
+        {
+          "id": 3,
+          "currency": "EUR",
+          "balance": 40000
+        },
+        {
+          "id": 4,
+          "currency": "BRL",
+          "balance": 60000
+        }
+      ],
+      "after_accounts": [
+        {
+          "id": 1,
+          "currency": "ARS",
+          "balance": 120003000
+        },
+        {
+          "id": 2,
+          "currency": "USD",
+          "balance": 59998.01999999999
+        },
+        {
+          "id": 3,
+          "currency": "EUR",
+          "balance": 40000
+        },
+        {
+          "id": 4,
+          "currency": "BRL",
+          "balance": 60000
+        }
+      ],
+      "stored_operation": {
+        "id": "2Opo6c_mQSTKOAVCzm2tV",
+        "ts": "2026-11-19T02:38:52.169Z",
+        "request": {
+          "baseCurrency": "ARS",
+          "counterCurrency": "USD",
+          "baseAccountId": "cliente-ARS-verificacion",
+          "counterAccountId": "cliente-USD-verificacion",
+          "baseAmount": 1000,
+          "dni": "1000000",
+          "arca": {
+            "ok": true,
+            "codigoAutorizacion": "15469462-4732-456b-8b13-91d87e2d08c4"
+          }
+        },
+        "dni": "1000000",
+        "arca": {
+          "ok": true,
+          "codigoAutorizacion": "15469462-4732-456b-8b13-91d87e2d08c4"
+        },
+        "exchangeRate": 0.00066,
+        "counterAmount": 0.66,
+        "ok": true,
+        "obs": null
+      },
+      "balance_delta_verified": {
+        "ARS": 1000,
+        "USD": -0.66
+      },
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "before_accounts": [
+    {
+      "id": 1,
+      "currency": "ARS",
+      "balance": 120002000
+    },
+    {
+      "id": 2,
+      "currency": "USD",
+      "balance": 59998.67999999999
+    },
+    {
+      "id": 3,
+      "currency": "EUR",
+      "balance": 40000
+    },
+    {
+      "id": 4,
+      "currency": "BRL",
+      "balance": 60000
+    }
+  ],
+  "after_accounts": [
+    {
+      "id": 1,
+      "currency": "ARS",
+      "balance": 120003000
+    },
+    {
+      "id": 2,
+      "currency": "USD",
+      "balance": 59998.01999999999
+    },
+    {
+      "id": 3,
+      "currency": "EUR",
+      "balance": 40000
+    },
+    {
+      "id": 4,
+      "currency": "BRL",
+      "balance": 60000
+    }
+  ],
+  "arca_error_branch_observed": true,
+  "finished_at_utc": "2026-11-19T02:38:53.432365+00:00"
+}

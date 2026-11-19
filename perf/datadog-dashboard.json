@@ -274,6 +274,11 @@
               },
               {
                 "data_source": "metrics",
+                "name": "pending",
+                "query": "sum:artillery.tp2_exchange_pending{$test,$case,$run}.as_rate().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
                 "name": "invalid",
                 "query": "sum:artillery.tp2_invalid_response{$test,$case,$run}.as_rate().rollup(sum,10)"
               }
@@ -286,6 +291,10 @@
               {
                 "formula": "not_approved",
                 "alias": "Cambios no aprobados/s"
+              },
+              {
+                "formula": "pending",
+                "alias": "Pendientes de conciliación/s"
               },
               {
                 "formula": "invalid",

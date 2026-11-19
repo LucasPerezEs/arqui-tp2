@@ -30,10 +30,16 @@ Para los cambios, confirmar que ARCA y Redis estén integrados y configurar
 bash perf/run.sh root 1-nodo
 bash perf/run.sh rates 1-nodo
 
-export TP2_DNI="<DNI_DE_PRUEBA>"
+export TP2_DNI="1000000"
 bash perf/run.sh exchange-low 1-nodo
 bash perf/run.sh exchange-ramp 1-nodo
 ```
 
 Son pruebas independientes. Usar `2-nodos` cuando esa configuración esté desplegada.
 Los reportes y horarios se guardan en `perf/results/<caso>/<run>/`.
+
+El DNI 1000000 fue aprobado fiscalmente en las verificaciones. El simulador
+de ARCA también puede fallar con ese DNI; los HTTP 5xx siguen siendo errores.
+El generador distingue aprobados, no aprobados y operaciones pendientes
+EXCHANGE_PENDING. Una respuesta pendiente con formato válido no se cuenta
+como intercambio aprobado ni como respuesta fuera de contrato.

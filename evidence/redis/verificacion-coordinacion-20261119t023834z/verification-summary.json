@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "pm2_status": "online",
+  "pending_reservations": 0,
+  "agent_counter_deltas": {
+    "dogstatsdStats.metricpackets": 27,
+    "dogstatsdStats.metricparseerrors": 0,
+    "dogstatsdStats.udppacketreadingerrors": 0,
+    "forwarderStats.errors": 0,
+    "forwarderStats.success": 7
+  },
+  "approved_balance_delta": {
+    "ARS": 1000,
+    "USD": -0.66
+  }
+}

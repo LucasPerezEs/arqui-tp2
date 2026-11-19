@@ -64,13 +64,18 @@ function trackExchange(_request, response, _context, events, done) {
   const notApproved = response.statusCode >= 400 && response.statusCode < 600
     && body?.ok === false;
 
+  const pending = response.statusCode === 503 && body?.ok === null
+    && body.pending === true && body.error === "EXCHANGE_PENDING"
+    && typeof body.id === "string" && body.id.length > 0;
+
   events.emit("counter", "tp2_exchange_ok", Number(approved));
   events.emit("counter", "tp2_exchange_not_ok", Number(notApproved));
+  events.emit("counter", "tp2_exchange_pending", Number(pending));
 
   // ok:false no identifica por sí solo un rechazo de ARCA: también puede ser
   // falta de saldo. Los códigos HTTP se contabilizan por separado, incluso si
   // la aplicación usa HTTP 500 para un resultado de negocio negativo.
-  return finishCheck(approved || notApproved, events, done);
+  return finishCheck(approved || notApproved || pending, events, done);
 }
 
 module.exports = { prepareExchange, trackRoot, trackRates, trackExchange };

@@ -1,0 +1,6 @@
+{
+  "capacity": 1,
+  "location": "eastus2",
+  "name": "tp2vmss",
+  "sku": "Standard_D2als_v7"
+}
