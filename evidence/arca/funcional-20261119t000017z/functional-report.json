@@ -1,0 +1,177 @@
+{
+  "started_at_utc": "2026-11-19T00:02:44.571804+00:00",
+  "target": "http://losvkupkav.eastus2.cloudapp.azure.com",
+  "git_commit": "3a4873d911056f16386f36954c8b4976580ac068",
+  "type": "pruebas funcionales secuenciales, sin carga",
+  "cases": [
+    {
+      "name": "GET /",
+      "http_status": 200,
+      "body": "Server is up.",
+      "at_utc": "2026-11-19T00:02:44.647238+00:00"
+    },
+    {
+      "name": "GET /rates",
+      "http_status": 200,
+      "body": {
+        "ARS": {
+          "BRL": 0.0034,
+          "EUR": 0.00057,
+          "USD": 0.00066
+        },
+        "BRL": {
+          "ARS": 297.06
+        },
+        "EUR": {
+          "ARS": 1761
+        },
+        "USD": {
+          "ARS": 1513
+        }
+      },
+      "at_utc": "2026-11-19T00:02:44.976387+00:00"
+    },
+    {
+      "name": "GET /accounts",
+      "http_status": 200,
+      "body": [
+        {
+          "id": 1,
+          "currency": "ARS",
+          "balance": 120000000
+        },
+        {
+          "id": 2,
+          "currency": "USD",
+          "balance": 60000
+        },
+        {
+          "id": 3,
+          "currency": "EUR",
+          "balance": 40000
+        },
+        {
+          "id": 4,
+          "currency": "BRL",
+          "balance": 60000
+        }
+      ],
+      "at_utc": "2026-11-19T00:02:45.276961+00:00"
+    },
+    {
+      "name": "DNI numerico",
+      "request": {
+        "baseCurrency": "ARS",
+        "counterCurrency": "USD",
+        "baseAmount": 1000,
+        "baseAccountId": 10,
+        "counterAccountId": 11,
+        "dni": 40101235
+      },
+      "http_status": 400,
+      "body": {
+        "ok": false,
+        "error": "El DNI debe ser un texto entre 1000000 y 99999999"
+      },
+      "at_utc": "2026-11-19T00:02:46.160504+00:00"
+    },
+    {
+      "name": "DNI fuera de rango",
+      "request": {
+        "baseCurrency": "ARS",
+        "counterCurrency": "USD",
+        "baseAmount": 1000,
+        "baseAccountId": 10,
+        "counterAccountId": 11,
+        "dni": "999999"
+      },
+      "http_status": 400,
+      "body": {
+        "ok": false,
+        "error": "El DNI debe ser un texto entre 1000000 y 99999999"
+      },
+      "at_utc": "2026-11-19T00:02:46.454653+00:00"
+    },
+    {
+      "name": "DNI ausente",
+      "request": {
+        "baseCurrency": "ARS",
+        "counterCurrency": "USD",
+        "baseAmount": 1000,
+        "baseAccountId": 10,
+        "counterAccountId": 11
+      },
+      "http_status": 400,
+      "body": {
+        "ok": false,
+        "error": "El DNI debe ser un texto entre 1000000 y 99999999"
+      },
+      "at_utc": "2026-11-19T00:02:46.744485+00:00"
+    }
+  ],
+  "diagnostics": [
+    {
+      "dni": "1000000",
+      "http_status": 200,
+      "body": {
+        "ok": true,
+        "codigoAutorizacion": "65be1b16-76f5-430a-8da2-d8a59ccc5fae",
+        "dni": "1000000"
+      },
+      "at_utc": "2026-11-19T00:02:47.630308+00:00"
+    },
+    {
+      "dni": "1000001",
+      "http_status": 200,
+      "body": {
+        "ok": true,
+        "codigoAutorizacion": "6e78467a-6682-4cff-b495-c6a4e424ae61",
+        "dni": "1000001"
+      },
+      "at_utc": "2026-11-19T00:02:48.334706+00:00"
+    },
+    {
+      "dni": "1000002",
+      "http_status": 200,
+      "body": {
+        "ok": true,
+        "codigoAutorizacion": "972ca302-b956-4f0d-ad46-d9e5081c30a5",
+        "dni": "1000002"
+      },
+      "at_utc": "2026-11-19T00:02:48.945060+00:00"
+    },
+    {
+      "dni": "1000003",
+      "http_status": 200,
+      "body": {
+        "ok": true,
+        "codigoAutorizacion": "8ff085a0-d13a-4f8c-8f1a-5d02694a9652",
+        "dni": "1000003"
+      },
+      "at_utc": "2026-11-19T00:02:49.498958+00:00"
+    },
+    {
+      "dni": "1000004",
+      "http_status": 200,
+      "body": {
+        "ok": true,
+        "codigoAutorizacion": "5d5a28e1-a9be-43a5-92b4-6709dce9ae34",
+        "dni": "1000004"
+      },
+      "at_utc": "2026-11-19T00:02:50.288389+00:00"
+    },
+    {
+      "dni": "1000005",
+      "http_status": 502,
+      "body": {
+        "ok": false,
+        "error": "Exception consuming ARCA's service"
+      },
+      "at_utc": "2026-11-19T00:02:50.933874+00:00"
+    }
+  ],
+  "operations": [],
+  "result": "failed",
+  "error": "Consulta ARCA para DNI 1000005: HTTP 502",
+  "finished_at_utc": "2026-11-19T00:02:51.225740+00:00"
+}

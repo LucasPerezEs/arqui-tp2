@@ -1,0 +1,256 @@
+{
+  "started_at_utc": "2026-11-19T00:08:39.976394+00:00",
+  "target": "http://losvkupkav.eastus2.cloudapp.azure.com",
+  "git_commit": "3a4873d911056f16386f36954c8b4976580ac068",
+  "diagnostics": [
+    {
+      "dni": "1000000",
+      "http_status": 200,
+      "body": {
+        "ok": true,
+        "codigoAutorizacion": "498f7f56-3f14-4fd9-998d-1b36c768dbc6",
+        "dni": "1000000"
+      },
+      "at_utc": "2026-11-19T00:08:40.737606+00:00"
+    },
+    {
+      "dni": "40101235",
+      "http_status": 200,
+      "body": {
+        "ok": true,
+        "codigoAutorizacion": "90065f75-9cf2-4a89-bb22-569a4e6169d0",
+        "dni": "40101235"
+      },
+      "at_utc": "2026-11-19T00:08:41.254766+00:00"
+    },
+    {
+      "dni": "99999999",
+      "http_status": 200,
+      "body": {
+        "ok": false,
+        "codigoAutorizacion": null,
+        "dni": "99999999"
+      },
+      "at_utc": "2026-11-19T00:08:41.990851+00:00"
+    }
+  ],
+  "operations": [
+    {
+      "request": {
+        "baseCurrency": "ARS",
+        "counterCurrency": "USD",
+        "baseAmount": 1000,
+        "baseAccountId": 10,
+        "counterAccountId": 11,
+        "dni": "99999999"
+      },
+      "accounts_before": [
+        {
+          "id": 1,
+          "currency": "ARS",
+          "balance": 120000000
+        },
+        {
+          "id": 2,
+          "currency": "USD",
+          "balance": 60000
+        },
+        {
+          "id": 3,
+          "currency": "EUR",
+          "balance": 40000
+        },
+        {
+          "id": 4,
+          "currency": "BRL",
+          "balance": 60000
+        }
+      ],
+      "log_count_before": 0,
+      "http_status": 403,
+      "body": {
+        "id": "j4BzPR542whYygYqDRi1Y",
+        "ts": "2026-11-19T00:08:43.794Z",
+        "ok": false,
+        "request": {
+          "baseCurrency": "ARS",
+          "counterCurrency": "USD",
+          "baseAmount": 1000,
+          "baseAccountId": 10,
+          "counterAccountId": 11,
+          "dni": "99999999"
+        },
+        "dni": "99999999",
+        "arca": {
+          "ok": false,
+          "codigoAutorizacion": null,
+          "dni": "99999999"
+        },
+        "counterAmount": 0,
+        "obs": "ARCA rejected the operation"
+      },
+      "at_utc": "2026-11-19T00:08:43.684427+00:00",
+      "accounts_after": [
+        {
+          "id": 1,
+          "currency": "ARS",
+          "balance": 120000000
+        },
+        {
+          "id": 2,
+          "currency": "USD",
+          "balance": 60000
+        },
+        {
+          "id": 3,
+          "currency": "EUR",
+          "balance": 40000
+        },
+        {
+          "id": 4,
+          "currency": "BRL",
+          "balance": 60000
+        }
+      ],
+      "log_count_after": 1,
+      "log_entry": {
+        "id": "j4BzPR542whYygYqDRi1Y",
+        "ts": "2026-11-19T00:08:43.794Z",
+        "ok": false,
+        "request": {
+          "baseCurrency": "ARS",
+          "counterCurrency": "USD",
+          "baseAmount": 1000,
+          "baseAccountId": 10,
+          "counterAccountId": 11,
+          "dni": "99999999"
+        },
+        "dni": "99999999",
+        "arca": {
+          "ok": false,
+          "codigoAutorizacion": null,
+          "dni": "99999999"
+        },
+        "counterAmount": 0,
+        "obs": "ARCA rejected the operation"
+      },
+      "checks_passed": true
+    },
+    {
+      "request": {
+        "baseCurrency": "ARS",
+        "counterCurrency": "USD",
+        "baseAmount": 1000,
+        "baseAccountId": 10,
+        "counterAccountId": 11,
+        "dni": "1000000"
+      },
+      "accounts_before": [
+        {
+          "id": 1,
+          "currency": "ARS",
+          "balance": 120000000
+        },
+        {
+          "id": 2,
+          "currency": "USD",
+          "balance": 60000
+        },
+        {
+          "id": 3,
+          "currency": "EUR",
+          "balance": 40000
+        },
+        {
+          "id": 4,
+          "currency": "BRL",
+          "balance": 60000
+        }
+      ],
+      "log_count_before": 1,
+      "http_status": 200,
+      "body": {
+        "id": "HjepDvuSPQwmJENf24jlA",
+        "ts": "2026-11-19T00:08:45.893Z",
+        "ok": true,
+        "request": {
+          "baseCurrency": "ARS",
+          "counterCurrency": "USD",
+          "baseAmount": 1000,
+          "baseAccountId": 10,
+          "counterAccountId": 11,
+          "dni": "1000000",
+          "arca": {
+            "ok": true,
+            "codigoAutorizacion": "4e1a67cc-092d-4ad9-9284-aa9666d04301"
+          }
+        },
+        "dni": "1000000",
+        "arca": {
+          "ok": true,
+          "codigoAutorizacion": "4e1a67cc-092d-4ad9-9284-aa9666d04301"
+        },
+        "exchangeRate": 0.00066,
+        "counterAmount": 0.66,
+        "obs": null
+      },
+      "at_utc": "2026-11-19T00:08:46.345045+00:00",
+      "accounts_after": [
+        {
+          "id": 1,
+          "currency": "ARS",
+          "balance": 120001000
+        },
+        {
+          "id": 2,
+          "currency": "USD",
+          "balance": 59999.34
+        },
+        {
+          "id": 3,
+          "currency": "EUR",
+          "balance": 40000
+        },
+        {
+          "id": 4,
+          "currency": "BRL",
+          "balance": 60000
+        }
+      ],
+      "log_count_after": 2,
+      "log_entry": {
+        "id": "HjepDvuSPQwmJENf24jlA",
+        "ts": "2026-11-19T00:08:45.893Z",
+        "ok": true,
+        "request": {
+          "baseCurrency": "ARS",
+          "counterCurrency": "USD",
+          "baseAmount": 1000,
+          "baseAccountId": 10,
+          "counterAccountId": 11,
+          "dni": "1000000",
+          "arca": {
+            "ok": true,
+            "codigoAutorizacion": "4e1a67cc-092d-4ad9-9284-aa9666d04301"
+          }
+        },
+        "dni": "1000000",
+        "arca": {
+          "ok": true,
+          "codigoAutorizacion": "4e1a67cc-092d-4ad9-9284-aa9666d04301"
+        },
+        "exchangeRate": 0.00066,
+        "counterAmount": 0.66,
+        "obs": null
+      },
+      "checks_passed": true
+    }
+  ],
+  "external_errors": [],
+  "approved_dni": "1000000",
+  "rejected_dni": "99999999",
+  "approval_verified": true,
+  "fiscal_rejection_verified": true,
+  "result": "passed",
+  "finished_at_utc": "2026-11-19T00:08:46.925858+00:00"
+}
