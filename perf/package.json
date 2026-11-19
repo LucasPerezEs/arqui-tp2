@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "artillery": "artillery",
-    "test": "node --test processor.test.js"
+    "artillery": "artillery"
   },
   "author": "",
   "license": "ISC",

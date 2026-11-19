@@ -23,6 +23,11 @@
       "name": "host",
       "prefix": "host",
       "default": "*"
+    },
+    {
+      "name": "env",
+      "prefix": "env",
+      "default": "azure"
     }
   ],
   "widgets": [
@@ -30,7 +35,7 @@
       "id": 1,
       "definition": {
         "type": "note",
-        "content": "Seleccioná test, case y run para las métricas del generador. El filtro host se aplica solamente a los recursos de las VM tp2vmss*. Usá el mismo intervalo absoluto para ambos.\n\nLos p50/p95 graficados son por intervalo; el p95 global sale de report.json. Un VU completado no implica un cambio aprobado. Sin datos no significa cero. Los resultados negativos no identifican por sí solos un rechazo de ARCA.",
+        "content": "Seleccioná test, case y run para Artillery. Las métricas de ARCA y negocio usan host y env; los recursos de las VM usan host. Correlacioná todo con el mismo intervalo absoluto, sin otras pruebas simultáneas.\n\nLos percentiles HTTP del generador son por intervalo; el p95 global sale de report.json. Los percentiles de ARCA son del Agent por nodo y resultado; no son un p95 global entre nodos. ARCA aprobada no implica cambio completado. business.exchanges cuenta los intercambios que terminaron después de la aprobación de ARCA. Volumen y neto son importes por intervalo y moneda, no saldos. Sin datos no significa cero.",
         "background_color": "white",
         "font_size": "14",
         "text_align": "left",
@@ -433,6 +438,329 @@
       "layout": {
         "x": 6,
         "y": 11,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 10,
+      "definition": {
+        "type": "timeseries",
+        "title": "ARCA: consultas y resultados por segundo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "requests",
+                "query": "sum:arvault.arca.requests{service:arvault,$env,$host}.as_rate().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "approved",
+                "query": "sum:arvault.arca.approved{service:arvault,$env,$host}.as_rate().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "rejected",
+                "query": "sum:arvault.arca.rejected{service:arvault,$env,$host}.as_rate().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "errors",
+                "query": "sum:arvault.arca.errors{service:arvault,$env,$host}.as_rate().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "requests",
+                "alias": "Consultas/s"
+              },
+              {
+                "formula": "approved",
+                "alias": "Aprobadas/s"
+              },
+              {
+                "formula": "rejected",
+                "alias": "Rechazadas/s"
+              },
+              {
+                "formula": "errors",
+                "alias": "Errores/s"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "include_zero": true,
+          "min": "0"
+        }
+      },
+      "layout": {
+        "x": 0,
+        "y": 14,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 11,
+      "definition": {
+        "type": "timeseries",
+        "title": "ARCA: errores por causa y segundo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "errors",
+                "query": "sum:arvault.arca.errors{service:arvault,$env,$host} by {reason}.as_rate().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "errors",
+                "alias": "Errores/s por causa"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "include_zero": true,
+          "min": "0"
+        }
+      },
+      "layout": {
+        "x": 6,
+        "y": 14,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 12,
+      "definition": {
+        "type": "timeseries",
+        "title": "ARCA: latencia por nodo y resultado (ms)",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "average",
+                "query": "avg:arvault.arca.duration_ms.avg{service:arvault,$env,$host} by {host,outcome}"
+              },
+              {
+                "data_source": "metrics",
+                "name": "p95",
+                "query": "avg:arvault.arca.duration_ms.95percentile{service:arvault,$env,$host} by {host,outcome}"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "average",
+                "alias": "Media por nodo e intervalo"
+              },
+              {
+                "formula": "p95",
+                "alias": "p95 por nodo e intervalo"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "include_zero": true,
+          "min": "0"
+        }
+      },
+      "layout": {
+        "x": 0,
+        "y": 17,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 13,
+      "definition": {
+        "type": "timeseries",
+        "title": "Negocio: intercambios finalizados tras ARCA por segundo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "exchanges",
+                "query": "sum:arvault.business.exchanges{service:arvault,$env,$host} by {outcome}.as_rate().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "exchanges",
+                "alias": "Intercambios/s por resultado"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "include_zero": true,
+          "min": "0"
+        }
+      },
+      "layout": {
+        "x": 6,
+        "y": 17,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 14,
+      "definition": {
+        "type": "timeseries",
+        "title": "Negocio: volumen por moneda e intervalo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "ars",
+                "query": "sum:arvault.business.volume.ARS{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "usd",
+                "query": "sum:arvault.business.volume.USD{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "eur",
+                "query": "sum:arvault.business.volume.EUR{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "brl",
+                "query": "sum:arvault.business.volume.BRL{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "ars",
+                "alias": "ARS"
+              },
+              {
+                "formula": "usd",
+                "alias": "USD"
+              },
+              {
+                "formula": "eur",
+                "alias": "EUR"
+              },
+              {
+                "formula": "brl",
+                "alias": "BRL"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "include_zero": true,
+          "min": "0"
+        }
+      },
+      "layout": {
+        "x": 0,
+        "y": 20,
+        "width": 6,
+        "height": 3
+      }
+    },
+    {
+      "id": 15,
+      "definition": {
+        "type": "timeseries",
+        "title": "Negocio: flujo neto por moneda e intervalo",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "requests": [
+          {
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "ars",
+                "query": "sum:arvault.business.net.ARS{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "usd",
+                "query": "sum:arvault.business.net.USD{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "eur",
+                "query": "sum:arvault.business.net.EUR{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              },
+              {
+                "data_source": "metrics",
+                "name": "brl",
+                "query": "sum:arvault.business.net.BRL{service:arvault,$env,$host}.as_count().rollup(sum,10)"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "ars",
+                "alias": "ARS"
+              },
+              {
+                "formula": "usd",
+                "alias": "USD"
+              },
+              {
+                "formula": "eur",
+                "alias": "EUR"
+              },
+              {
+                "formula": "brl",
+                "alias": "BRL"
+              }
+            ],
+            "response_format": "timeseries",
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "include_zero": true
+        }
+      },
+      "layout": {
+        "x": 6,
+        "y": 20,
         "width": 6,
         "height": 3
       }

@@ -81,7 +81,7 @@ export async function setRedisRate(rateRequest) {
   });
 }
 
-// Registra una operación rechazada por ARCA en el historial compartido
+// Registra operaciones rechazadas o fallidas antes del intercambio
 export async function addRedisLogEntry(entry) {
   return updateRedis("arvault:log", log => {
     log.push(entry);

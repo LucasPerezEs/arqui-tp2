@@ -41,6 +41,9 @@
     - name: Start new version with Redis configuration
       command: pm2 start app.js
       environment:
+        DD_AGENT_HOST: "127.0.0.1"
+        DD_DOGSTATSD_PORT: "8125"
+        DD_ENV: "azure"
         ARCA_URI: "{{ lookup('env', 'ARCA_URI') }}"
         REDIS_ENABLED: "{{ lookup('env', 'REDIS_ENABLED') | default('false', true) }}"
         REDIS_HOST: "{{ lookup('env', 'REDIS_HOST') }}"

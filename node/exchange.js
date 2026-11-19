@@ -2,18 +2,8 @@ import { nanoid } from "nanoid";
 
 import { init as stateInit, getAccounts as stateAccounts, getRates as stateRates, getLog as stateLog } from "./state.js";
 
-// Import para StatsD para metricas
-import StatsD from "hot-shots";
-
-// Redis - intercambio usando estado compartido
+import { recordExchangeResult } from "./metrics.js";
 import { exchangeRedis } from "./redisExchange.js";
-
-// Configuracion de StatsD para enviar metricas a Graphite
-const statsd = new StatsD({
-  host: "graphite",
-  port: 8125,
-  prefix: "arvault.business.",
-});
 
 let accounts;
 let rates;
@@ -67,15 +57,7 @@ export async function exchange(exchangeRequest) {
   if (process.env.REDIS_ENABLED === "true") {
     const result = await exchangeRedis(exchangeRequest, transfer);
 
-    if (result.ok) {
-      const { baseCurrency, counterCurrency, baseAmount } = exchangeRequest;
-
-      // Mantengo las metricas de negocio del TP1
-      statsd.increment(`volume.${baseCurrency}`, baseAmount);
-      statsd.increment(`volume.${counterCurrency}`, result.counterAmount);
-      statsd.increment(`net.${baseCurrency}`, baseAmount);
-      statsd.decrement(`net.${counterCurrency}`, result.counterAmount);
-    }
+    recordExchangeResult(exchangeRequest, result);
 
     return result;
   }
@@ -125,16 +107,6 @@ export async function exchange(exchangeRequest) {
         exchangeResult.ok = true;
         exchangeResult.counterAmount = counterAmount;
 
-        // Metricas de negocio para StatsD
-        
-        // Volumen: Acumula el total comerciado por cada moneda
-        statsd.increment(`volume.${baseCurrency}`, baseAmount);
-        statsd.increment(`volume.${counterCurrency}`, counterAmount);
-
-        // Neto: Compras ingresan dinero al sistema (+), Ventas retiran dinero (-)
-        statsd.increment(`net.${baseCurrency}`, baseAmount);
-        statsd.decrement(`net.${counterCurrency}`, counterAmount);
-
       } else {
         // No fue posible realizar la transferencia a la cuenta de contrapartida del 
         // cliente; se devuelve el importe base al cliente
@@ -154,6 +126,7 @@ export async function exchange(exchangeRequest) {
 
   // Registra la transacción y return
   log.push(exchangeResult);
+  recordExchangeResult(exchangeRequest, exchangeResult);
 
   return exchangeResult;
 }

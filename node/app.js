@@ -1,5 +1,5 @@
 import express from 'express';
-import { isValidDni, validateDni } from './arca.js';
+import { ArcaError, isValidDni, validateDni } from './arca.js';
 import { nanoid } from 'nanoid';
 
 // Redis - operaciones compartidas
@@ -121,6 +121,25 @@ app.get('/log', async (req, res) => {
 
 
 
+async function respondWithLoggedOperation(res, status, operation) {
+    try {
+        if (process.env.REDIS_ENABLED === 'true') {
+            await addRedisLogEntry(operation);
+        } else {
+            getLog().push(operation);
+        }
+    } catch (error) {
+        console.error('Could not record operation:', error.message);
+        return res.status(503).json({
+            ...operation,
+            error: 'OPERATION_LOG_UNAVAILABLE',
+            logRecorded: false,
+        });
+    }
+
+    return res.status(status).json({ ...operation, logRecorded: true });
+}
+
 app.post('/exchange', async (req, res) => {
     const {
         baseCurrency,
@@ -163,13 +182,7 @@ app.post('/exchange', async (req, res) => {
                 obs: 'ARCA rejected the operation',
             };
 
-            if (process.env.REDIS_ENABLED === 'true') {
-                await addRedisLogEntry(rejectedOperation);
-            } else {
-                getLog().push(rejectedOperation);
-            }
-
-            return res.status(403).json(rejectedOperation);
+            return respondWithLoggedOperation(res, 403, rejectedOperation);
         }
 
         // Si ARCA aprueba, ejecutamos el intercambio
@@ -193,9 +206,27 @@ app.post('/exchange', async (req, res) => {
     } catch (err) {
         console.error('Error processing exchange:', err.message);
 
+        if (err instanceof ArcaError) {
+            const failedOperation = {
+                id: nanoid(),
+                ts: new Date(),
+                ok: false,
+                request: req.body,
+                dni: req.body.dni,
+                arca: {
+                    ok: null,
+                    error: { type: err.reason, upstreamStatus: err.upstreamStatus },
+                },
+                counterAmount: 0,
+                obs: err.message,
+                error: err.code,
+            };
+            return respondWithLoggedOperation(res, err.httpStatus, failedOperation);
+        }
+
         return res.status(500).json({
+            ok: false,
             error: 'Could not process exchange',
-            details: err.message,
         });
     }
 });
@@ -215,7 +246,11 @@ app.get('/:dni', async (req, res) => {
         res.status(200).json(await validateDni(req.params.dni));
     } catch (e) {
         console.error("Exception consuming ARCA's service:", e.message);
-        res.status(502).json({ ok: false, error: "Exception consuming ARCA's service" });
+        res.status(e instanceof ArcaError ? e.httpStatus : 500).json({
+            ok: false,
+            error: e instanceof ArcaError ? e.code : 'ARCA_VALIDATION_FAILED',
+            reason: e instanceof ArcaError ? e.reason : undefined,
+        });
     }
 })
 
