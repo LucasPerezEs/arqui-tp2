@@ -1,0 +1,16 @@
+{
+  "functional_passed": true,
+  "pm2_status": "online",
+  "pm2_restarts_delta": 0,
+  "agent_counter_deltas": {
+    "dogstatsdStats.metricpackets": 24,
+    "dogstatsdStats.metricparseerrors": 0,
+    "dogstatsdStats.udppacketreadingerrors": 0,
+    "dogstatsdStats.udppackets": 16,
+    "aggregatorStats.dogstatsdmetricsample": 28,
+    "forwarderStats.errors": 0,
+    "forwarderStats.success": 8
+  },
+  "dogstatsd_received_metrics": true,
+  "no_new_metric_parse_errors": true
+}
