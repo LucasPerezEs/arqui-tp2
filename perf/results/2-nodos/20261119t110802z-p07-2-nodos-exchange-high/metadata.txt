@@ -1,0 +1,15 @@
+scenario=exchange-high
+case=2-nodos
+run=20261119t110802z-p07-2-nodos-exchange-high
+target=http://losvkupkav.eastus2.cloudapp.azure.com
+datadog_site=us5.datadoghq.com
+node=v22.22.3
+artillery=2.0.34
+git_commit=8e4a5582e9707d937ecaf350ecf45461d5cc19bc
+tracked_changes_begin
+ansible/requirements.yml
+tracked_changes_end
+dni_prueba=1000000
+base_currency=ARS
+counter_currency=USD
+base_amount=1000
