@@ -103,8 +103,6 @@
 - Predicción de resultados: al menos 60 % de respuestas HTTP 200 y como
   máximo 40 % de errores de ARCA HTTP 502/504. En la fase sostenida
   esperamos al menos seis aprobaciones/s en promedio, con diez llegadas/s.
-  La referencia de 73,3 % de aprobaciones daría unas 7,3 aprobaciones/s
-  si esa proporción y la capacidad se mantuvieran; no es una garantía.
 - Predicción de otros errores: cero HTTP 403 para el DNI verificado,
   cero HTTP 500 por fallos de negocio, cero HTTP 503 de operaciones
   pendientes, cero errores de conexión o timeout del generador y cero
@@ -135,3 +133,54 @@
   evidence/1-nodo/20261119t024732z-1-nodo-exchange-low/analysis.json,
   sus capturas y snapshots, y
   perf/results/1-nodo/20261119t024732z-1-nodo-exchange-low/report.json.
+
+## P-05 — Misma carga de intercambios con dos nodos
+
+- Configuración: repetir la prueba P-04 con dos nodos en lugar de uno.
+  Ambos serán Standard_D2als_v7 en eastus2 y usarán el mismo balanceador,
+  Redis Balanced_B0 con conexión privada y TLS, y ARCA con 0,5 CPU y
+  0,5 GiB. La aplicación seguirá con el código del commit 827af31.
+- Carga: usar perf/exchange-ramp.yaml sin cambiarlo. Primero, 30 segundos
+  a una solicitud por segundo; después, 60 segundos subiendo de una a diez;
+  por último, 60 segundos a diez solicitudes por segundo. Cada solicitud
+  cambia 1.000 ARS a USD con el DNI "1000000". Esperamos unas 960 solicitudes;
+  para analizar el resultado usaremos la cantidad que registre el reporte.
+- Condiciones: mismo equipo con Ubuntu/WSL, desde CABA y por WiFi. Sin otras
+  pruebas, despliegues ni cambios de cotización mientras medimos. Los dos
+  nodos deben usar Redis y la misma versión de la aplicación. Mantener los
+  datos existentes, saldo suficiente, cotización ARS/USD de 0,00066 y cero
+  reservas pendientes antes de empezar.
+- Qué pasó con un nodo: hubo 960 solicitudes, 728 aprobadas (75,83 %) y
+  232 errores HTTP 502 por fallos HTTP 500 de ARCA (24,17 %). La mediana
+  fue de 1.085,9 ms y el p95 de 1.326,4 ms. En 50 segundos de la última
+  fase hubo 385 aprobaciones: 7,7 por segundo. La CPU estuvo por debajo
+  del 10 % y no quedaron reservas pendientes.
+- Qué esperamos con dos nodos: entre seis y nueve aprobaciones por segundo
+  durante la última fase. El 95 % de las respuestas debería tardar menos
+  de 2.000 ms (p95), contando también las respuestas de error. No esperamos
+  el doble de aprobaciones: seguimos enviando diez solicitudes por segundo
+  y un solo nodo ya pudo atender esa carga. Esta prueba no mide la carga
+  máxima que pueden soportar dos nodos.
+- Por qué: agregar otro nodo no reduce la demora de internet, ARCA ni las
+  transferencias simuladas. ARCA y Redis siguen siendo los mismos servicios
+  compartidos. Además, los dos nodos deberán actualizar los mismos saldos
+  e historial en Redis sin perder cambios. La CPU baja de P-04 indica que
+  el nodo tenía margen para atender esa carga.
+- Errores esperados: al menos 60 % de respuestas HTTP 200 y como máximo
+  40 % de errores de ARCA HTTP 502/504. Esperamos cero rechazos HTTP 403,
+  fallos de negocio HTTP 500, operaciones pendientes HTTP 503, errores de
+  conexión o timeout del generador y respuestas con formato incorrecto.
+  Los fallos de ARCA pueden variar respecto de la prueba anterior.
+- Saldos e historial: cada solicitud procesada debe agregar una entrada
+  al historial, sin duplicados ni pérdida de entradas anteriores. Por cada
+  aprobación, el saldo ARS debe subir 1.000 y el USD bajar 0,66. EUR y BRL
+  deben quedar iguales. Los errores de ARCA no deben modificar saldos y
+  no deben quedar reservas pendientes al terminar.
+- Qué vamos a guardar y comparar: configuración del VMSS y de las dos
+  aplicaciones; saldos, cotizaciones e historial antes y después; reporte
+  de Artillery y capturas de Datadog con ambos nodos. Compararemos mediana,
+  p95 y aprobaciones por segundo en intervalos completos de la última fase.
+  No esperamos que el balanceador reparta exactamente la mitad a cada nodo.
+  Un pico aislado del gráfico no indica la capacidad máxima del sistema.
+- Referencia: `perf/results/1-nodo/20261119t031538z-1-nodo-exchange-ramp/report.json`
+  y `evidence/1-nodo/20261119t031538z-1-nodo-exchange-ramp/`.
